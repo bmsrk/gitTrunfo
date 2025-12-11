@@ -13,21 +13,40 @@ const BattleLog: React.FC<BattleLogProps> = ({ logs }) => {
   }, [logs]);
 
   return (
-    <div className="w-full h-32 bg-black border border-terminal p-2 font-mono text-xs overflow-y-auto shadow-[inset_0_0_10px_#000]">
-      <div className="flex flex-col">
-        {logs.map((log, idx) => (
-          <div key={idx} className="mb-1 leading-tight">
-             <span className="opacity-50 mr-2">[{new Date().toLocaleTimeString('en-US', {hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit'})}]</span>
-             <span className={`${log.type === 'commentary' ? 'text-yellow-300' : log.type === 'combat' ? 'text-white font-bold bg-red-900/50' : 'text-terminal'}`}>
-                {log.type === 'info' && '> SYSTEM: '}
-                {log.type === 'commentary' && '> ANALYSIS: '}
-                {log.type === 'combat' && '> COMBAT: '}
+    <div className="w-full h-40 bg-black border border-terminal font-mono text-xs overflow-y-auto shadow-[inset_0_0_10px_#000] flex flex-col">
+      {logs.map((log) => {
+        const timeString = new Date(log.timestamp).toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+
+        const bgClass = log.type === 'combat' 
+          ? 'bg-red-900/10 border-l-2 border-red-500/50' 
+          : log.type === 'commentary' 
+            ? 'bg-yellow-900/10 border-l-2 border-yellow-500/50' 
+            : 'hover:bg-terminal/5 border-l-2 border-transparent';
+        
+        const textClass = log.type === 'commentary' 
+          ? 'text-yellow-300' 
+          : log.type === 'combat' 
+            ? 'text-white font-bold' 
+            : 'text-terminal';
+
+        return (
+          <div key={log.id} className={`p-1 border-b border-terminal/10 flex gap-2 ${bgClass}`}>
+             <span className="opacity-40 shrink-0 text-terminal">[{timeString}]</span>
+             <span className={`break-words ${textClass}`}>
+                {log.type === 'info' && '> '}
+                {log.type === 'commentary' && 'Analysis: '}
+                {log.type === 'combat' && 'Combat: '}
                 {log.text}
              </span>
           </div>
-        ))}
-        <div ref={bottomRef} className="animate-pulse">_</div>
-      </div>
+        );
+      })}
+      <div ref={bottomRef} />
     </div>
   );
 };

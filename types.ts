@@ -51,6 +51,8 @@ export enum GamePhase {
 }
 
 export interface BattleLogEntry {
+  id: string;
   text: string;
   type: 'info' | 'commentary' | 'combat';
+  timestamp: number;
 }

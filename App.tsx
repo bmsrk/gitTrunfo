@@ -64,8 +64,17 @@ const App: React.FC = () => {
   // Apply Theme & Font
   useEffect(() => {
     const root = document.documentElement;
-    // @ts-ignore
-    const colorConfig = COLORS[currentColor];
+    // Cast to a type that includes optional palette to satisfy TypeScript checks
+    const colorConfig = COLORS[currentColor] as {
+        label: string;
+        color: string;
+        palette?: {
+            key: string;
+            val: string;
+            str: string;
+            dim: string;
+        }
+    };
     const fontConfig = FONTS[currentFont];
     
     // Main Color
@@ -96,7 +105,12 @@ const App: React.FC = () => {
   }, [currentColor, currentFont]);
 
   const addLog = useCallback((text: string, type: BattleLogEntry['type'] = 'info') => {
-    setLogs(prev => [...prev, { text, type }]);
+    setLogs(prev => [...prev, { 
+      id: Math.random().toString(36).substr(2, 9),
+      text, 
+      type,
+      timestamp: Date.now()
+    }]);
     playSound.type();
   }, []);
 
