@@ -1,0 +1,5 @@
+{
+  "name": "GitTrunfo: Battle",
+  "description": "A GitHub-based Top Trumps card game. Battle with repositories using stats like Stars, Forks, and Code Size.",
+  "requestFramePermissions": []
+}

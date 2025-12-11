@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitTrunfo: v1.0</title>
+    <!-- Retro Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              terminal: 'var(--terminal-main)',
+              'terminal-dim': 'var(--terminal-dim)',
+            },
+            fontFamily: {
+              mono: ['var(--terminal-font)', 'monospace'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        --terminal-bg: #050505;
+        --terminal-main: #33ff00;
+        --terminal-dim: #003b00;
+        --terminal-font: 'VT323', monospace;
+      }
+      
+      body {
+        font-family: var(--terminal-font);
+        background-color: var(--terminal-bg);
+        color: var(--terminal-main);
+        overflow-x: hidden;
+      }
+
+      /* CRT Scanline Effect - Tuned down for readability */
+      body::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+        z-index: 100;
+        background-size: 100% 2px, 3px 100%;
+        pointer-events: none;
+      }
+
+      /* Retro Scrollbar - High Contrast */
+      ::-webkit-scrollbar {
+        width: 14px;
+        background: #000;
+        border-left: 1px solid var(--terminal-main);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--terminal-main);
+        border: 2px solid #000;
+      }
+
+      /* Utilities */
+      .retro-border {
+        border: 2px solid var(--terminal-main);
+        box-shadow: 4px 4px 0px var(--terminal-dim);
+      }
+      
+      .retro-button {
+        background: #000;
+        border: 2px solid var(--terminal-main);
+        color: var(--terminal-main);
+        cursor: pointer;
+        transition: all 0.1s;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+      .retro-button:hover:not(:disabled) {
+        background: var(--terminal-main);
+        color: #000;
+        box-shadow: 2px 2px 0px var(--terminal-dim);
+        transform: translate(-1px, -1px);
+      }
+      .retro-button:active:not(:disabled) {
+        transform: translate(1px, 1px);
+        box-shadow: none;
+      }
+      .retro-button:disabled {
+        border-color: #333;
+        color: #333;
+        cursor: not-allowed;
+      }
+
+      /* Selected Row Highlight (Inverted) */
+      .bg-terminal-selected {
+        background-color: var(--terminal-main);
+        color: #000;
+      }
+
+      /* Animations */
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+      .cursor-blink {
+        animation: blink 1s step-end infinite;
+      }
+
+      @keyframes glitch {
+        0% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(-2px, -2px); }
+        60% { transform: translate(2px, 2px); }
+        80% { transform: translate(2px, -2px); }
+        100% { transform: translate(0); }
+      }
+      .animate-glitch {
+        animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+      }
+
+      @keyframes slideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      .animate-enter {
+        animation: slideIn 0.3s ease-out forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
+    "react/": "https://esm.sh/react@^19.2.1/",
+    "react": "https://esm.sh/react@^19.2.1",
+    "lucide-react": "https://esm.sh/lucide-react@^0.559.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
