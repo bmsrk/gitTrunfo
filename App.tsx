@@ -5,7 +5,7 @@ import { playSound } from './services/audioService';
 import Card from './components/Card';
 import BattleLog from './components/BattleLog';
 import { Player, GamePhase, BattleLogEntry, StatType, STAT_LABELS } from './types';
-import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert, Cpu } from 'lucide-react';
+import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert, Cpu, Trophy, Skull } from 'lucide-react';
 
 // CONFIGURATION CONSTANTS
 const THEMES = [
@@ -430,26 +430,126 @@ const App: React.FC = () => {
                 </div>
             )}
 
-            {/* GAME OVER MODAL */}
-            {phase === GamePhase.GAME_OVER && (
-                 <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-enter">
-                     <div className="bg-[#0a0a0a] border-2 border-terminal p-8 max-w-lg w-full text-center shadow-[0_0_50px_rgba(var(--terminal-main),0.2)]">
-                        <h2 className="text-4xl md:text-5xl font-retro text-terminal mb-2 tracking-widest">GAME OVER</h2>
-                        <div className="h-px w-full bg-gradient-to-r from-transparent via-terminal to-transparent mb-8"></div>
+            {/* GAME OVER MODAL - WINNING SCREEN */}
+            {phase === GamePhase.GAME_OVER && player1 && player2 && player2.deck.length === 0 && (
+                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-enter">
+                     <div className="bg-gradient-to-b from-green-950/80 to-[#0a0a0a] border-4 border-green-500/50 p-8 max-w-2xl w-full text-center shadow-[0_0_80px_rgba(34,197,94,0.4)] relative overflow-hidden">
                         
-                        <div className="mb-8">
-                            <div className="text-terminal/60 text-sm uppercase tracking-widest mb-2">Winner</div>
-                            <div className="text-3xl font-bold text-white">
-                                {player1?.deck.length === 0 ? player2?.user.login : player1?.user.login}
+                        {/* Animated Background Effect */}
+                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(34,197,94,0.1)_50%,transparent_75%)] bg-[length:20px_20px] animate-[shimmer_2s_linear_infinite] pointer-events-none"></div>
+                        <style>{`@keyframes shimmer { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }`}</style>
+                        
+                        {/* Trophy Icon */}
+                        <div className="relative mb-6">
+                            <Trophy size={80} className="mx-auto text-yellow-400 animate-bounce" style={{ animationDuration: '2s' }} />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-32 h-32 bg-yellow-400/20 rounded-full animate-ping"></div>
+                            </div>
+                        </div>
+                        
+                        <h2 className="text-5xl md:text-7xl font-retro text-green-400 mb-4 tracking-widest animate-pulse relative z-10">
+                            VICTORY!
+                        </h2>
+                        <div className="h-1 w-full bg-gradient-to-r from-transparent via-green-400 to-transparent mb-8 relative z-10"></div>
+                        
+                        <div className="mb-8 relative z-10">
+                            <div className="text-green-300/80 text-sm uppercase tracking-widest mb-3 font-bold">Champion</div>
+                            <div className="flex items-center justify-center gap-4 mb-4">
+                                <img src={player1.user.avatar_url} className="w-20 h-20 rounded-full border-4 border-green-400 shadow-lg shadow-green-400/50" alt="Winner" />
+                                <div className="text-4xl md:text-5xl font-bold text-green-400">
+                                    {player1.user.login}
+                                </div>
+                            </div>
+                            
+                            {/* Stats Summary */}
+                            <div className="grid grid-cols-3 gap-4 mt-6 p-4 bg-black/40 border border-green-500/30 rounded">
+                                <div>
+                                    <div className="text-green-400/60 text-xs uppercase tracking-wider mb-1">Rounds Won</div>
+                                    <div className="text-2xl font-bold text-green-300">{player1.score}</div>
+                                </div>
+                                <div>
+                                    <div className="text-green-400/60 text-xs uppercase tracking-wider mb-1">Cards Remaining</div>
+                                    <div className="text-2xl font-bold text-green-300">{player1.deck.length}</div>
+                                </div>
+                                <div>
+                                    <div className="text-green-400/60 text-xs uppercase tracking-wider mb-1">Total Rounds</div>
+                                    <div className="text-2xl font-bold text-green-300">{player1.score + player2.score}</div>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-6 text-green-400/70 text-sm italic">
+                                "Outstanding performance! All repositories captured!"
                             </div>
                         </div>
 
                         <button 
                             onClick={() => { playSound.click(); setPhase(GamePhase.SETUP); }}
-                            className="retro-button px-8 py-3 text-lg flex items-center justify-center gap-2 mx-auto w-full hover:bg-terminal hover:text-black"
+                            className="relative z-10 bg-green-600 hover:bg-green-500 text-black font-bold px-8 py-3 text-lg flex items-center justify-center gap-2 mx-auto w-full transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] border-2 border-green-400"
                         >
                             <RotateCcw size={18} />
-                            RESTART SYSTEM
+                            PLAY AGAIN
+                        </button>
+                     </div>
+                 </div>
+            )}
+            
+            {/* GAME OVER MODAL - LOSING SCREEN */}
+            {phase === GamePhase.GAME_OVER && player1 && player2 && player1.deck.length === 0 && (
+                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-enter">
+                     <div className="bg-gradient-to-b from-red-950/80 to-[#0a0a0a] border-4 border-red-500/50 p-8 max-w-2xl w-full text-center shadow-[0_0_80px_rgba(239,68,68,0.4)] relative overflow-hidden">
+                        
+                        {/* Glitch Effect Background */}
+                        <div className="absolute inset-0 bg-[linear-gradient(0deg,transparent_25%,rgba(239,68,68,0.1)_50%,transparent_75%)] bg-[length:100%_4px] opacity-50 pointer-events-none"></div>
+                        
+                        {/* Skull Icon */}
+                        <div className="relative mb-6">
+                            <Skull size={80} className="mx-auto text-red-500 animate-pulse" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-32 h-32 bg-red-500/20 rounded-full animate-ping"></div>
+                            </div>
+                        </div>
+                        
+                        <h2 className="text-5xl md:text-7xl font-retro text-red-500 mb-4 tracking-widest relative z-10">
+                            YOU LOST
+                        </h2>
+                        <div className="h-1 w-full bg-gradient-to-r from-transparent via-red-500 to-transparent mb-8 relative z-10"></div>
+                        
+                        <div className="mb-8 relative z-10">
+                            <div className="text-red-300/80 text-sm uppercase tracking-widest mb-3 font-bold">Defeated By</div>
+                            <div className="flex items-center justify-center gap-4 mb-4">
+                                <img src={player2.user.avatar_url} className="w-20 h-20 rounded-full border-4 border-red-500 shadow-lg shadow-red-500/50 grayscale" alt="Victor" />
+                                <div className="text-4xl md:text-5xl font-bold text-red-400">
+                                    {player2.user.login}
+                                </div>
+                            </div>
+                            
+                            {/* Stats Summary */}
+                            <div className="grid grid-cols-3 gap-4 mt-6 p-4 bg-black/40 border border-red-500/30 rounded">
+                                <div>
+                                    <div className="text-red-400/60 text-xs uppercase tracking-wider mb-1">Rounds Won</div>
+                                    <div className="text-2xl font-bold text-red-300">{player1.score}</div>
+                                </div>
+                                <div>
+                                    <div className="text-red-400/60 text-xs uppercase tracking-wider mb-1">Opponent Cards</div>
+                                    <div className="text-2xl font-bold text-red-300">{player2.deck.length}</div>
+                                </div>
+                                <div>
+                                    <div className="text-red-400/60 text-xs uppercase tracking-wider mb-1">Total Rounds</div>
+                                    <div className="text-2xl font-bold text-red-300">{player1.score + player2.score}</div>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-6 text-red-400/70 text-sm italic">
+                                "Don't give up! Every master was once a beginner."
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => { playSound.click(); setPhase(GamePhase.SETUP); }}
+                            className="relative z-10 bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-3 text-lg flex items-center justify-center gap-2 mx-auto w-full transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] border-2 border-red-400"
+                        >
+                            <RotateCcw size={18} />
+                            TRY AGAIN
                         </button>
                      </div>
                  </div>
