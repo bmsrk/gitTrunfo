@@ -13,12 +13,12 @@ const THEMES = [
     id: 'retro',
     label: 'RETRO',
     colors: {
-      background: '#0d1117',
-      foreground: '#58a6ff',
-      keyword: '#ff7b72',
-      string: '#a5d6ff',
-      number: '#79c0ff',
-      comment: '#8b949e',
+      background: '#0B0E11',
+      foreground: '#3DF5FF',
+      keyword: '#FF6B81',
+      string: '#FFDD57',
+      number: '#7CFFA1',
+      comment: '#5E7480',
     }
   },
   {
@@ -43,6 +43,18 @@ const THEMES = [
       string: "#e6db74",
       number: "#ae81ff",
       comment: "#75715e",
+    }
+  },
+  {
+    id: 'synthwave',
+    label: 'SYNTHWAVE',
+    colors: {
+      background: "#130f1a",
+      foreground: "#00ff9f", // textPrimary
+      keyword: "#ff0055",     // accentPrimary
+      string: "#00f3ff",      // accentSecondary
+      number: "#b829ea",      // accentWarning/Numbers
+      comment: "#4b5263",     // textDim
     }
   }
 ];
@@ -321,7 +333,7 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Theme Selector */}
-                    <div className="mt-8 grid grid-cols-3 gap-2 text-[10px] md:text-xs text-terminal/40">
+                    <div className="mt-8 grid grid-cols-4 gap-2 text-[10px] md:text-xs text-terminal/40">
                          {THEMES.map(t => (
                              <button
                                  key={t.id}

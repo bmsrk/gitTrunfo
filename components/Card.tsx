@@ -124,7 +124,7 @@ const Card: React.FC<CardProps> = ({
                         {config.label}
                     </span>
                     
-                    <span className={`font-mono text-xs md:text-sm font-bold ${isSelected ? 'text-black' : 'text-terminal group-hover:text-black'}`}>
+                    <span className={`font-mono text-xs md:text-sm font-bold ${isSelected ? 'text-black' : 'text-terminal-val group-hover:text-black'}`}>
                         {value}
                     </span>
 
