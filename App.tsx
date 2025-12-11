@@ -5,7 +5,15 @@ import { playSound } from './services/audioService';
 import Card from './components/Card';
 import BattleLog from './components/BattleLog';
 import { Player, GamePhase, BattleLogEntry, StatType, STAT_LABELS } from './types';
-import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert, Cpu, Trophy, Skull } from 'lucide-react';
+import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert, Cpu, Trophy, Skull, BookOpen, Settings, Star, GitFork, Eye, HardDrive, CircleDot, Code2, Lightbulb } from 'lucide-react';
+
+// Z-INDEX CONSTANTS
+const Z_INDEX = {
+  HEADER: 20,
+  BATTLE_LOG: 20,
+  GAME_OVER_MODAL: 50,
+  MODAL: 100,
+};
 
 // CONFIGURATION CONSTANTS
 const THEMES = [
@@ -19,6 +27,12 @@ const THEMES = [
       string: '#FFDD57',
       number: '#7CFFA1',
       comment: '#5E7480',
+      accent: '#FF6B81',      // Pink accent for buttons/highlights
+      accentHover: '#FF8AA0', // Lighter pink for hover
+      success: '#7CFFA1',     // Green for success states
+      warning: '#FFDD57',     // Yellow for warnings
+      error: '#FF3355',       // Brighter red for errors
+      muted: '#2A3440',       // Muted background
     }
   },
   {
@@ -31,6 +45,12 @@ const THEMES = [
       string: "#f1fa8c",
       number: "#8be9fd",
       comment: "#6272a4",
+      accent: "#ff79c6",      // Pink accent
+      accentHover: "#ffb3e6", // Lighter pink
+      success: "#50fa7b",     // Green
+      warning: "#f1fa8c",     // Yellow
+      error: "#ff5555",       // Red
+      muted: "#44475a",       // Selection gray
     }
   },
   {
@@ -43,6 +63,12 @@ const THEMES = [
       string: "#e6db74",
       number: "#ae81ff",
       comment: "#75715e",
+      accent: "#f92672",      // Pink/Magenta accent
+      accentHover: "#ff669d", // Lighter magenta
+      success: "#a6e22e",     // Green
+      warning: "#e6db74",     // Yellow
+      error: "#ff1744",       // Brighter red
+      muted: "#3e3d32",       // Darker bg
     }
   },
   {
@@ -50,11 +76,53 @@ const THEMES = [
     label: 'SYNTHWAVE',
     colors: {
       background: "#130f1a",
-      foreground: "#00ff9f", // textPrimary
-      keyword: "#ff0055",     // accentPrimary
-      string: "#00f3ff",      // accentSecondary
-      number: "#b829ea",      // accentWarning/Numbers
-      comment: "#4b5263",     // textDim
+      foreground: "#00ff9f",
+      keyword: "#ff0055",
+      string: "#00f3ff",
+      number: "#b829ea",
+      comment: "#4b5263",
+      accent: "#ff0055",      // Hot pink
+      accentHover: "#ff2d75", // Lighter hot pink
+      success: "#00ff9f",     // Neon green
+      warning: "#ffd500",     // Yellow
+      error: "#ff2233",       // Bright red
+      muted: "#241e2e",       // Dark purple
+    }
+  },
+  {
+    id: 'github-dark',
+    label: 'GITHUB',
+    colors: {
+      background: "#0d1117",
+      foreground: "#58a6ff",
+      keyword: "#ff7b72",
+      string: "#a5d6ff",
+      number: "#79c0ff",
+      comment: "#8b949e",
+      accent: "#1f6feb",      // GitHub blue
+      accentHover: "#388bfd", // Lighter blue
+      success: "#3fb950",     // Green
+      warning: "#d29922",     // Yellow
+      error: "#f85149",       // Red
+      muted: "#161b22",       // Darker bg
+    }
+  },
+  {
+    id: 'nord',
+    label: 'NORD',
+    colors: {
+      background: "#2e3440",
+      foreground: "#88c0d0",
+      keyword: "#81a1c1",
+      string: "#a3be8c",
+      number: "#b48ead",
+      comment: "#616e88",
+      accent: "#81a1c1",      // Nord blue
+      accentHover: "#a3bcd4", // Lighter nord blue
+      success: "#a3be8c",     // Green
+      warning: "#ebcb8b",     // Yellow
+      error: "#bf616a",       // Red
+      muted: "#3b4252",       // Darker nord bg
     }
   }
 ];
@@ -74,6 +142,8 @@ const App: React.FC = () => {
   // Customization
   const [currentThemeId, setCurrentThemeId] = useState<string>('retro');
   const [currentFont, setCurrentFont] = useState<keyof typeof FONTS>('code');
+  const [showRulesModal, setShowRulesModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Logic state
   const [logs, setLogs] = useState<BattleLogEntry[]>([]);
@@ -87,9 +157,23 @@ const App: React.FC = () => {
     const root = document.documentElement;
     const theme = THEMES.find(t => t.id === currentThemeId) || THEMES[0];
     
+    // Main theme colors
     root.style.setProperty('--terminal-bg', theme.colors.background);
     root.style.setProperty('--terminal-main', theme.colors.foreground);
     root.style.setProperty('--terminal-dim', theme.colors.comment);
+    
+    // Syntax highlighting
+    root.style.setProperty('--syntax-key', theme.colors.keyword);
+    root.style.setProperty('--syntax-val', theme.colors.number);
+    root.style.setProperty('--syntax-str', theme.colors.string);
+    
+    // Extended theme colors
+    root.style.setProperty('--accent-primary', theme.colors.accent);
+    root.style.setProperty('--accent-hover', theme.colors.accentHover);
+    root.style.setProperty('--color-success', theme.colors.success);
+    root.style.setProperty('--color-warning', theme.colors.warning);
+    root.style.setProperty('--color-error', theme.colors.error);
+    root.style.setProperty('--bg-muted', theme.colors.muted);
     
     // Font
     if (currentFont === 'vt323') {
@@ -97,10 +181,6 @@ const App: React.FC = () => {
     } else {
        document.body.style.fontFamily = "'Fira Code', monospace";
     }
-
-    root.style.setProperty('--syntax-key', theme.colors.keyword);
-    root.style.setProperty('--syntax-val', theme.colors.number);
-    root.style.setProperty('--syntax-str', theme.colors.string);
 
   }, [currentThemeId, currentFont]);
 
@@ -254,23 +334,260 @@ const App: React.FC = () => {
     }, 1500);
   }, [player1, player2, addLog, resolveRound]);
 
+  // RulesModal Component
+  const RulesModal = () => (
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-enter" style={{ zIndex: Z_INDEX.MODAL }}>
+      <div className="bg-[var(--terminal-bg)] border-2 border-[var(--accent-primary)] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_40px_rgba(var(--accent-primary),0.3)]">
+        {/* Header */}
+        <div className="sticky top-0 bg-[var(--terminal-bg)] border-b border-[var(--accent-primary)]/30 p-4 flex justify-between items-center z-10">
+          <div className="flex items-center gap-3">
+            <BookOpen size={24} className="text-[var(--accent-primary)]" />
+            <h2 className="text-xl md:text-2xl font-retro text-[var(--accent-primary)] uppercase tracking-widest">Game Rules</h2>
+          </div>
+          <button
+            onClick={() => { playSound.click(); setShowRulesModal(false); }}
+            className="text-terminal/60 hover:text-[var(--accent-primary)] transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Objective */}
+          <section>
+            <h3 className="text-lg font-bold text-[var(--syntax-val)] uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Trophy size={18} /> Objective
+            </h3>
+            <p className="text-terminal/80 text-sm leading-relaxed">
+              Capture all of your opponent's repository cards by winning statistical battles. 
+              The player with all the cards at the end wins the game!
+            </p>
+          </section>
+
+          {/* Setup */}
+          <section>
+            <h3 className="text-lg font-bold text-[var(--syntax-val)] uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Monitor size={18} /> Setup
+            </h3>
+            <ul className="space-y-2 text-terminal/80 text-sm">
+              <li className="flex gap-2">
+                <span className="text-[var(--accent-primary)] font-bold">1.</span>
+                <span>Enter two GitHub usernames (or use "CPU" for AI opponent)</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-[var(--accent-primary)] font-bold">2.</span>
+                <span>Each player gets a deck of their most popular repositories</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-[var(--accent-primary)] font-bold">3.</span>
+                <span>Cards are shuffled randomly at the start</span>
+              </li>
+            </ul>
+          </section>
+
+          {/* Gameplay */}
+          <section>
+            <h3 className="text-lg font-bold text-[var(--syntax-val)] uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Swords size={18} /> Gameplay
+            </h3>
+            <ul className="space-y-2 text-terminal/80 text-sm">
+              <li className="flex gap-2">
+                <span className="text-[var(--accent-primary)] font-bold">1.</span>
+                <span>On your turn, select a stat from your top card to compete with</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-[var(--accent-primary)] font-bold">2.</span>
+                <span>Your opponent's card is revealed and stats are compared</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-[var(--accent-primary)] font-bold">3.</span>
+                <span>The player with the higher stat value wins the round</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-[var(--accent-primary)] font-bold">4.</span>
+                <span>Winner takes both cards and adds them to the bottom of their deck</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-[var(--accent-primary)] font-bold">5.</span>
+                <span>In case of a tie, each player keeps their own card</span>
+              </li>
+            </ul>
+          </section>
+
+          {/* Stats Explained */}
+          <section>
+            <h3 className="text-lg font-bold text-[var(--syntax-val)] uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Code2 size={18} /> Repository Stats
+            </h3>
+            <div className="grid gap-3">
+              <div className="bg-[var(--bg-muted)] p-3 border border-terminal/20">
+                <div className="font-bold text-[var(--syntax-str)] mb-1 flex items-center gap-2">
+                  <Star size={14} /> Stars
+                </div>
+                <p className="text-xs text-terminal/70">Number of users who starred the repository</p>
+              </div>
+              <div className="bg-[var(--bg-muted)] p-3 border border-terminal/20">
+                <div className="font-bold text-[var(--syntax-str)] mb-1 flex items-center gap-2">
+                  <GitFork size={14} /> Forks
+                </div>
+                <p className="text-xs text-terminal/70">Number of times the repository has been forked</p>
+              </div>
+              <div className="bg-[var(--bg-muted)] p-3 border border-terminal/20">
+                <div className="font-bold text-[var(--syntax-str)] mb-1 flex items-center gap-2">
+                  <Eye size={14} /> Watchers
+                </div>
+                <p className="text-xs text-terminal/70">Number of users watching the repository</p>
+              </div>
+              <div className="bg-[var(--bg-muted)] p-3 border border-terminal/20">
+                <div className="font-bold text-[var(--syntax-str)] mb-1 flex items-center gap-2">
+                  <HardDrive size={14} /> Size
+                </div>
+                <p className="text-xs text-terminal/70">Total size of the repository in megabytes</p>
+              </div>
+              <div className="bg-[var(--bg-muted)] p-3 border border-terminal/20">
+                <div className="font-bold text-[var(--syntax-str)] mb-1 flex items-center gap-2">
+                  <CircleDot size={14} /> Issues
+                </div>
+                <p className="text-xs text-terminal/70">Number of open issues (higher might mean more active development)</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Strategy Tips */}
+          <section>
+            <h3 className="text-lg font-bold text-[var(--syntax-val)] uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Lightbulb size={18} /> Strategy Tips
+            </h3>
+            <ul className="space-y-2 text-terminal/80 text-sm list-disc list-inside">
+              <li>Choose stats strategically based on your repository type</li>
+              <li>Popular projects tend to have high stars and forks</li>
+              <li>Large projects might have more issues due to complexity</li>
+              <li>Pay attention to your opponent's deck size - they might be running out!</li>
+            </ul>
+          </section>
+        </div>
+
+        {/* Footer */}
+        <div className="sticky bottom-0 bg-[var(--terminal-bg)] border-t border-[var(--accent-primary)]/30 p-4">
+          <button
+            onClick={() => { playSound.click(); setShowRulesModal(false); }}
+            className="w-full bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] text-black font-bold py-3 px-6 transition-all uppercase tracking-wider text-sm"
+          >
+            Got It!
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // SettingsModal Component
+  const SettingsModal = () => (
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-enter" style={{ zIndex: Z_INDEX.MODAL }}>
+      <div className="bg-[var(--terminal-bg)] border-2 border-[var(--syntax-val)] max-w-lg w-full shadow-[0_0_40px_rgba(var(--syntax-val),0.3)]">
+        {/* Header */}
+        <div className="bg-[var(--terminal-bg)] border-b border-[var(--syntax-val)]/30 p-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <Settings size={24} className="text-[var(--syntax-val)]" />
+            <h2 className="text-xl md:text-2xl font-retro text-[var(--syntax-val)] uppercase tracking-widest">Settings</h2>
+          </div>
+          <button
+            onClick={() => { playSound.click(); setShowSettingsModal(false); }}
+            className="text-terminal/60 hover:text-[var(--syntax-val)] transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Theme Selection */}
+          <section>
+            <h3 className="text-sm font-bold text-terminal uppercase tracking-wider mb-3">Color Theme</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {THEMES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => { playSound.click(); setCurrentThemeId(t.id); }}
+                  className={`px-4 py-3 border transition-all text-sm font-bold uppercase tracking-wider ${
+                    currentThemeId === t.id
+                      ? 'border-[var(--syntax-val)] bg-[var(--syntax-val)]/20 text-[var(--syntax-val)]'
+                      : 'border-terminal/30 text-terminal/60 hover:text-terminal hover:border-terminal/50'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Font Selection */}
+          <section>
+            <h3 className="text-sm font-bold text-terminal uppercase tracking-wider mb-3">Font Style</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(FONTS).map(([key, font]) => (
+                <button
+                  key={key}
+                  onClick={() => { playSound.click(); setCurrentFont(key as keyof typeof FONTS); }}
+                  className={`px-4 py-3 border transition-all text-sm font-bold uppercase tracking-wider ${
+                    currentFont === key
+                      ? 'border-[var(--syntax-val)] bg-[var(--syntax-val)]/20 text-[var(--syntax-val)]'
+                      : 'border-terminal/30 text-terminal/60 hover:text-terminal hover:border-terminal/50'
+                  }`}
+                >
+                  {font.label}
+                </button>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-[var(--terminal-bg)] border-t border-[var(--syntax-val)]/30 p-4">
+          <button
+            onClick={() => { playSound.click(); setShowSettingsModal(false); }}
+            className="w-full bg-[var(--syntax-val)] hover:bg-[var(--syntax-val)]/80 text-black font-bold py-3 px-6 transition-all uppercase tracking-wider text-sm"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="h-screen w-screen flex flex-col items-center bg-[var(--terminal-bg)] overflow-hidden">
         
         {/* HEADER */}
-        <div className="w-full shrink-0 h-14 border-b border-terminal/30 px-4 flex justify-between items-center bg-black/20 z-20">
+        <div className="w-full shrink-0 h-14 border-b border-terminal/30 px-4 flex justify-between items-center bg-black/20" style={{ zIndex: Z_INDEX.HEADER }}>
             <div className="flex flex-col">
                 <span className="text-xl md:text-2xl font-retro font-bold text-terminal tracking-widest leading-none">GIT_TRUNFO</span>
                 <span className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] text-terminal/50">Card Battle System v2.0</span>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+                 <button 
+                     onClick={() => { playSound.click(); setShowRulesModal(true); }} 
+                     className="flex items-center gap-1.5 px-2 md:px-3 py-1 border border-[var(--accent-primary)]/50 text-[var(--accent-primary)] text-[10px] md:text-xs hover:bg-[var(--accent-primary)]/20 hover:border-[var(--accent-primary)] transition-colors uppercase font-bold tracking-wider"
+                     title="Game Rules"
+                 >
+                     <BookOpen size={12} /> <span className="hidden md:inline">Rules</span>
+                 </button>
+                 
+                 <button 
+                     onClick={() => { playSound.click(); setShowSettingsModal(true); }} 
+                     className="flex items-center gap-1.5 px-2 md:px-3 py-1 border border-[var(--syntax-val)]/50 text-[var(--syntax-val)] text-[10px] md:text-xs hover:bg-[var(--syntax-val)]/20 hover:border-[var(--syntax-val)] transition-colors uppercase font-bold tracking-wider"
+                     title="Settings"
+                 >
+                     <Settings size={12} /> <span className="hidden md:inline">Settings</span>
+                 </button>
+                 
                  {phase !== GamePhase.SETUP && (
                      <button 
                          onClick={handleQuit} 
-                         className="flex items-center gap-1.5 px-3 py-1 border border-terminal/50 text-terminal text-[10px] md:text-xs hover:bg-red-900/20 hover:border-red-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider"
+                         className="flex items-center gap-1.5 px-2 md:px-3 py-1 border border-terminal/50 text-terminal text-[10px] md:text-xs hover:bg-red-900/20 hover:border-red-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider"
                      >
-                         <X size={12} /> Quit
+                         <X size={12} /> <span className="hidden md:inline">Quit</span>
                      </button>
                  )}
             </div>
@@ -424,7 +741,7 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Battle Log - Fixed Bottom */}
-                    <div className="shrink-0 h-[120px] md:h-[140px] w-full border-t border-terminal/20 bg-black z-20">
+                    <div className="shrink-0 h-[120px] md:h-[140px] w-full border-t border-terminal/20 bg-black" style={{ zIndex: Z_INDEX.BATTLE_LOG }}>
                         <BattleLog logs={logs} />
                     </div>
                 </div>
@@ -432,7 +749,7 @@ const App: React.FC = () => {
 
             {/* GAME OVER MODAL - WINNING SCREEN */}
             {phase === GamePhase.GAME_OVER && player1 && player2 && player2.deck.length === 0 && (
-                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-enter">
+                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-enter" style={{ zIndex: Z_INDEX.GAME_OVER_MODAL }}>
                      <div className="bg-gradient-to-b from-green-950/80 to-[#0a0a0a] border-4 border-green-500/50 p-8 max-w-2xl w-full text-center shadow-[0_0_80px_rgba(34,197,94,0.4)] relative overflow-hidden">
                         
                         {/* Animated Background Effect */}
@@ -495,7 +812,7 @@ const App: React.FC = () => {
             
             {/* GAME OVER MODAL - LOSING SCREEN */}
             {phase === GamePhase.GAME_OVER && player1 && player2 && player1.deck.length === 0 && (
-                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-enter">
+                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-enter" style={{ zIndex: Z_INDEX.GAME_OVER_MODAL }}>
                      <div className="bg-gradient-to-b from-red-950/80 to-[#0a0a0a] border-4 border-red-500/50 p-8 max-w-2xl w-full text-center shadow-[0_0_80px_rgba(239,68,68,0.4)] relative overflow-hidden">
                         
                         {/* Glitch Effect Background */}
@@ -555,6 +872,10 @@ const App: React.FC = () => {
                  </div>
             )}
         </div>
+        
+        {/* MODALS */}
+        {showRulesModal && <RulesModal />}
+        {showSettingsModal && <SettingsModal />}
     </div>
   );
 };
