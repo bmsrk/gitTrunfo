@@ -5,42 +5,51 @@ import { playSound } from './services/audioService';
 import Card from './components/Card';
 import BattleLog from './components/BattleLog';
 import { Player, GamePhase, BattleLogEntry, StatType, STAT_LABELS } from './types';
+import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert } from 'lucide-react';
 
 // CONFIGURATION CONSTANTS
-// Palette: Key (Labels), Val (Numbers), Str (Repo Name/Strings)
-const COLORS = {
-  green: { label: 'PHOSPHOR', color: '#33ff00' },
-  amber: { label: 'AMBER', color: '#ffb000' },
-  cyan: { label: 'CYAN', color: '#00ffff' },
-  pink: { label: 'HOT PINK', color: '#ff0099' },
-  white: { label: 'PAPER', color: '#ffffff' },
-  vscode: { 
-    label: 'VSCODE', 
-    color: '#007acc', // Status Bar Blue for Main
-    palette: {
-        key: '#9cdcfe', // Light Blue
-        val: '#b5cea8', // Light Green
-        str: '#ce9178', // Orange
-        dim: '#1e1e1e' // Darker bg for border dim
+const THEMES = [
+  {
+    id: 'retro',
+    label: 'RETRO',
+    colors: {
+      background: '#0d1117',
+      foreground: '#58a6ff',
+      keyword: '#ff7b72',
+      string: '#a5d6ff',
+      number: '#79c0ff',
+      comment: '#8b949e',
     }
   },
-  dracula: { 
-    label: 'DRACULA', 
-    color: '#bd93f9', // Purple
-    palette: {
-        key: '#ff79c6', // Pink
-        val: '#8be9fd', // Cyan
-        str: '#f1fa8c', // Yellow
-        dim: '#282a36'
+  {
+    id: 'dracula',
+    label: 'DRACULA',
+    colors: {
+      background: "#282a36",
+      foreground: "#bd93f9",
+      keyword: "#ff79c6",
+      string: "#f1fa8c",
+      number: "#8be9fd",
+      comment: "#6272a4",
+    }
+  },
+  {
+    id: 'monokai',
+    label: 'MONOKAI',
+    colors: {
+      background: "#272822",
+      foreground: "#a6e22e",
+      keyword: "#f92672",
+      string: "#e6db74",
+      number: "#ae81ff",
+      comment: "#75715e",
     }
   }
-};
+];
 
 const FONTS = {
-  vt323: { label: 'TERMINAL', css: "'VT323', monospace", scale: 'text-lg' },
-  press: { label: '8-BIT', css: "'Press Start 2P', cursive", scale: 'text-xs' },
-  code: { label: 'DEV', css: "'Fira Code', monospace", scale: 'text-sm' },
-  retro: { label: 'TYPE', css: "'Courier New', Courier, monospace", scale: 'text-sm' },
+  vt323: { label: 'RETRO', css: "'VT323', monospace", scale: 'text-base' },
+  code: { label: 'CLEAN', css: "'Fira Code', monospace", scale: 'text-sm' },
 };
 
 const App: React.FC = () => {
@@ -51,8 +60,8 @@ const App: React.FC = () => {
   const [player2, setPlayer2] = useState<Player | null>(null);
   
   // Customization
-  const [currentColor, setCurrentColor] = useState<keyof typeof COLORS>('green');
-  const [currentFont, setCurrentFont] = useState<keyof typeof FONTS>('vt323');
+  const [currentThemeId, setCurrentThemeId] = useState<string>('retro');
+  const [currentFont, setCurrentFont] = useState<keyof typeof FONTS>('code');
 
   // Logic state
   const [logs, setLogs] = useState<BattleLogEntry[]>([]);
@@ -64,45 +73,25 @@ const App: React.FC = () => {
   // Apply Theme & Font
   useEffect(() => {
     const root = document.documentElement;
-    // Cast to a type that includes optional palette to satisfy TypeScript checks
-    const colorConfig = COLORS[currentColor] as {
-        label: string;
-        color: string;
-        palette?: {
-            key: string;
-            val: string;
-            str: string;
-            dim: string;
-        }
-    };
+    const theme = THEMES.find(t => t.id === currentThemeId) || THEMES[0];
     const fontConfig = FONTS[currentFont];
     
-    // Main Color
-    root.style.setProperty('--terminal-main', colorConfig.color);
+    root.style.setProperty('--terminal-bg', theme.colors.background);
+    root.style.setProperty('--terminal-main', theme.colors.foreground);
+    root.style.setProperty('--terminal-dim', theme.colors.comment);
     
-    // Dim Color
-    if (colorConfig.palette?.dim) {
-        root.style.setProperty('--terminal-dim', colorConfig.palette.dim);
-    } else {
-        root.style.setProperty('--terminal-dim', `${colorConfig.color}40`);
-    }
-
     // Font
-    root.style.setProperty('--terminal-font', fontConfig.css);
-
-    // Syntax Highlighting
-    if (colorConfig.palette) {
-        root.style.setProperty('--syntax-key', colorConfig.palette.key);
-        root.style.setProperty('--syntax-val', colorConfig.palette.val);
-        root.style.setProperty('--syntax-str', colorConfig.palette.str);
+    if (currentFont === 'vt323') {
+       document.body.style.fontFamily = "'VT323', monospace";
     } else {
-        // Monochrome Fallback
-        root.style.setProperty('--syntax-key', colorConfig.color);
-        root.style.setProperty('--syntax-val', colorConfig.color);
-        root.style.setProperty('--syntax-str', colorConfig.color);
+       document.body.style.fontFamily = "'Fira Code', monospace";
     }
 
-  }, [currentColor, currentFont]);
+    root.style.setProperty('--syntax-key', theme.colors.keyword);
+    root.style.setProperty('--syntax-val', theme.colors.number);
+    root.style.setProperty('--syntax-str', theme.colors.string);
+
+  }, [currentThemeId, currentFont]);
 
   const addLog = useCallback((text: string, type: BattleLogEntry['type'] = 'info') => {
     setLogs(prev => [...prev, { 
@@ -130,7 +119,7 @@ const App: React.FC = () => {
       setPlayer1(p1);
       setPlayer2(p2);
       
-      addLog(`INIT: ${p1.user.login} vs ${p2.user.login}`);
+      addLog(`Connected: ${p1.user.login} vs ${p2.user.login}`);
       playSound.start();
 
       const analysis = await generateMatchupAnalysis(p1, p2);
@@ -143,7 +132,7 @@ const App: React.FC = () => {
       }, 600);
 
     } catch (e: any) {
-      setError(e.message || "CONNECTION_FAILED");
+      setError(e.message || "Connection Failed");
       playSound.lose();
       setPhase(GamePhase.SETUP);
     }
@@ -174,17 +163,18 @@ const App: React.FC = () => {
         newP1Deck.push(p1Card, p2Card);
         updatedP1 = { ...currentP1, deck: newP1Deck, score: currentP1.score + 1 };
         updatedP2 = { ...currentP2, deck: newP2Deck };
-        addLog(`>> ${currentP1.user.login} wins round. Cards acquired.`, 'combat');
+        addLog(`${currentP1.user.login} wins the round.`, 'combat');
     } else if (winnerId === 'p2') {
         newP2Deck.push(p2Card, p1Card);
         updatedP1 = { ...currentP1, deck: newP1Deck };
         updatedP2 = { ...currentP2, deck: newP2Deck, score: currentP2.score + 1 };
-        addLog(`>> ${currentP2.user.login} wins round. You lost card.`, 'combat');
+        addLog(`${currentP2.user.login} wins the round.`, 'combat');
     } else {
         newP1Deck.push(p1Card);
         newP2Deck.push(p2Card);
         updatedP1 = { ...currentP1, deck: newP1Deck };
         updatedP2 = { ...currentP2, deck: newP2Deck };
+        addLog(`It's a draw. Cards retained.`, 'combat');
     }
 
     setPlayer1(updatedP1);
@@ -195,11 +185,11 @@ const App: React.FC = () => {
     if (newP1Deck.length === 0) {
         setPhase(GamePhase.GAME_OVER);
         playSound.lose();
-        addLog(`SESSION TERMINATED. WINNER: ${updatedP2.user.login}`, 'commentary');
+        addLog(`Game Over. Winner: ${updatedP2.user.login}`, 'commentary');
     } else if (newP2Deck.length === 0) {
         setPhase(GamePhase.GAME_OVER);
         playSound.win();
-        addLog(`SESSION TERMINATED. WINNER: ${updatedP1.user.login}`, 'commentary');
+        addLog(`Game Over. Winner: ${updatedP1.user.login}`, 'commentary');
     } else {
         setShowResult(false);
         setRoundWinner(null);
@@ -246,37 +236,33 @@ const App: React.FC = () => {
             winningCard.name
         );
         addLog(comment, 'commentary');
-    } else {
-        addLog("RESULT: DRAW. CARDS RETAINED.", 'combat');
     }
 
     setTimeout(() => {
         resolveRound(winnerId, player1, player2);
-    }, 1200);
+    }, 1500);
   }, [player1, player2, addLog, resolveRound]);
 
   return (
-    <div className={`min-h-screen md:p-4 flex flex-col items-center justify-center gap-4 transition-colors duration-500 ${FONTS[currentFont].scale} overflow-x-hidden`}>
+    <div className={`min-h-screen flex flex-col items-center py-6 px-4 transition-colors duration-500 overflow-x-hidden bg-[var(--terminal-bg)]`}>
         
         {/* Main Interface Wrapper */}
-        <div className="w-full max-w-4xl bg-black md:border-4 border-terminal p-2 md:p-4 shadow-[10px_10px_0px_rgba(0,0,0,0.5)] relative min-h-screen md:min-h-0">
+        <div className="w-full max-w-5xl flex flex-col gap-6 relative">
             
-            {/* Window Header */}
-            <div className="bg-terminal text-black px-3 py-2 font-bold flex justify-between items-center mb-6">
-                <span className="tracking-wider hidden md:inline">GIT_TRUNFO_SYSTEM_V1.0</span>
-                <span className="tracking-wider md:hidden">GIT_TRUNFO</span>
-                <div className="flex items-center gap-2 md:gap-4">
-                     {player1 && player2 && (
-                         <span className="bg-black text-terminal px-2 md:px-3 text-xs md:text-base border border-black">
-                            {player1.score.toString().padStart(2, '0')} - {player2.score.toString().padStart(2, '0')}
-                         </span>
-                     )}
+            {/* Header / Nav */}
+            <div className="flex justify-between items-center border-b border-terminal/30 pb-4">
+                <div className="flex flex-col">
+                    <span className="text-2xl md:text-3xl font-retro font-bold text-terminal tracking-widest leading-none">GIT_TRUNFO</span>
+                    <span className="text-[10px] uppercase tracking-[0.3em] text-terminal/50">Card Battle System</span>
+                </div>
+                
+                <div className="flex items-center gap-4">
                      {phase !== GamePhase.SETUP && (
                          <button 
                              onClick={handleQuit} 
-                             className="bg-red-600 text-white px-2 md:px-3 hover:bg-white hover:text-red-600 font-bold border border-black"
+                             className="flex items-center gap-2 px-4 py-1.5 border border-terminal/50 text-terminal text-xs hover:bg-red-900/20 hover:border-red-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider"
                          >
-                             X
+                             <X size={14} /> Quit
                          </button>
                      )}
                 </div>
@@ -284,125 +270,109 @@ const App: React.FC = () => {
 
             {/* SETUP PHASE */}
             {phase === GamePhase.SETUP && (
-                <div className="p-4 flex flex-col gap-6 items-center w-full">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-widest text-terminal mb-2 text-center leading-none">
-                        GIT<br/>TRUNFO
-                    </h1>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] animate-enter">
                     
-                    <div className="w-full max-w-md flex flex-col gap-4">
-                         <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold bg-terminal text-black w-fit px-1">PLAYER_ONE_ID</label>
-                            <input 
-                                value={player1Username}
-                                onChange={(e) => setPlayer1Username(e.target.value)}
-                                className="w-full bg-black border-2 border-terminal p-3 text-lg focus:outline-none focus:bg-terminal/10 text-terminal"
-                            />
-                         </div>
-                         <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold bg-terminal text-black w-fit px-1">OPPONENT_ID</label>
-                            <input 
-                                value={player2Username}
-                                onChange={(e) => setPlayer2Username(e.target.value)}
-                                className="w-full bg-black border-2 border-terminal p-3 text-lg focus:outline-none focus:bg-terminal/10 text-terminal"
-                            />
-                         </div>
-                    </div>
+                    <div className="w-full max-w-lg p-8 border border-terminal/30 bg-terminal/5 shadow-2xl backdrop-blur-sm">
+                        <div className="flex items-center gap-3 mb-6 text-terminal">
+                            <Monitor size={24} />
+                            <h2 className="text-xl font-bold uppercase tracking-widest">New Session</h2>
+                        </div>
 
-                    {error && <div className="text-white bg-red-600 p-2 font-bold w-full max-w-md text-center border-2 border-white">ERROR: {error}</div>}
-
-                    <button 
-                        onClick={handleStartGame}
-                        onMouseEnter={() => playSound.hover()}
-                        className="retro-button px-12 py-4 text-xl md:text-2xl tracking-widest mt-4 w-full max-w-md"
-                    >
-                        START_GAME
-                    </button>
-
-                    {/* System Config Panel */}
-                    <div className="mt-8 w-full max-w-md border-2 border-terminal-dim p-4 bg-terminal/5">
-                        <div className="text-center font-bold mb-4 bg-terminal-dim text-terminal w-fit mx-auto px-4 -mt-7">SYSTEM_CONFIG</div>
-                        
-                        <div className="flex flex-col gap-4">
-                            {/* Colors */}
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-terminal/20 pb-2 gap-2">
-                                <span className="text-sm font-bold text-terminal">DISPLAY_COLOR:</span>
-                                <div className="flex flex-wrap gap-2">
-                                    {(Object.keys(COLORS) as Array<keyof typeof COLORS>).map(c => (
-                                        <button
-                                            key={c}
-                                            onClick={() => { playSound.click(); setCurrentColor(c); }}
-                                            className={`w-6 h-6 border-2 transition-transform ${currentColor === c ? 'scale-125 border-white ring-1 ring-black' : 'border-transparent opacity-50 hover:opacity-100 hover:scale-110'}`}
-                                            // @ts-ignore
-                                            style={{ backgroundColor: COLORS[c].color }}
-                                            // @ts-ignore
-                                            title={COLORS[c].label}
-                                        />
-                                    ))}
+                         <div className="flex flex-col gap-6">
+                             <div className="group">
+                                <label className="text-xs font-bold text-terminal/60 uppercase tracking-wider mb-2 block group-focus-within:text-terminal">Player One (You)</label>
+                                <div className="relative">
+                                    <Github className="absolute left-3 top-3 text-terminal/40" size={18} />
+                                    <input 
+                                        value={player1Username}
+                                        onChange={(e) => setPlayer1Username(e.target.value)}
+                                        className="w-full bg-black border border-terminal/30 p-3 pl-10 text-terminal focus:outline-none focus:border-terminal focus:shadow-[0_0_15px_-5px_var(--terminal-main)] transition-all"
+                                        placeholder="GitHub Username"
+                                    />
                                 </div>
-                            </div>
-
-                            {/* Fonts */}
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                                <span className="text-sm font-bold text-terminal">FONT_FACE:</span>
-                                <div className="flex flex-wrap gap-2">
-                                    {(Object.keys(FONTS) as Array<keyof typeof FONTS>).map(f => (
-                                        <button
-                                            key={f}
-                                            onClick={() => { playSound.click(); setCurrentFont(f); }}
-                                            className={`px-2 py-1 text-[10px] border border-terminal transition-all hover:bg-terminal hover:text-black uppercase ${currentFont === f ? 'bg-terminal text-black font-bold' : 'text-terminal'}`}
-                                        >
-                                            {FONTS[f].label}
-                                        </button>
-                                    ))}
+                             </div>
+                             
+                             <div className="group">
+                                <label className="text-xs font-bold text-terminal/60 uppercase tracking-wider mb-2 block group-focus-within:text-terminal">Player Two (Opponent)</label>
+                                <div className="relative">
+                                    <Github className="absolute left-3 top-3 text-terminal/40" size={18} />
+                                    <input 
+                                        value={player2Username}
+                                        onChange={(e) => setPlayer2Username(e.target.value)}
+                                        className="w-full bg-black border border-terminal/30 p-3 pl-10 text-terminal focus:outline-none focus:border-terminal focus:shadow-[0_0_15px_-5px_var(--terminal-main)] transition-all"
+                                        placeholder="GitHub Username"
+                                    />
                                 </div>
-                            </div>
+                             </div>
+
+                             {error && <div className="text-red-400 bg-red-900/10 p-3 text-xs border border-red-900/50 flex items-center gap-2"><ShieldAlert size={14} /> {error}</div>}
+
+                             <button 
+                                onClick={handleStartGame}
+                                onMouseEnter={() => playSound.hover()}
+                                className="retro-button py-4 text-lg font-bold mt-2"
+                             >
+                                INITIALIZE BATTLE
+                             </button>
                         </div>
                     </div>
-                    
-                    <div className="text-xs text-terminal/60 mt-4 font-mono">
-                        created with &lt;3 by <a href="https://x.com/enrichthesoil" target="_blank" rel="noreferrer" className="text-terminal font-bold hover:bg-terminal hover:text-black">@enrichthesoil</a>
+
+                    {/* Theme Selector */}
+                    <div className="mt-8 flex gap-4 text-xs text-terminal/40">
+                         {THEMES.map(t => (
+                             <button
+                                 key={t.id}
+                                 onClick={() => { playSound.click(); setCurrentThemeId(t.id); }}
+                                 className={`px-3 py-1 border border-transparent hover:text-terminal transition-colors ${currentThemeId === t.id ? 'text-terminal border-b-terminal' : ''}`}
+                             >
+                                 {t.label}
+                             </button>
+                         ))}
                     </div>
                 </div>
             )}
 
             {/* LOADING PHASE */}
             {phase === GamePhase.LOADING && (
-                <div className="p-20 text-center">
-                    <div className="text-4xl animate-bounce mb-4 text-terminal">LOADING...</div>
-                    <div className="w-64 h-4 border-2 border-terminal p-0.5 mx-auto">
-                        <div className="h-full bg-terminal animate-[slideIn_2s_ease-out_infinite] w-full origin-left scale-x-0" style={{animationFillMode: 'forwards', animationName: 'progress'}}></div>
+                <div className="flex flex-col items-center justify-center min-h-[50vh]">
+                    <div className="text-6xl font-retro text-terminal animate-pulse mb-8">LOADING</div>
+                    <div className="w-64 h-1 bg-terminal/20 overflow-hidden">
+                        <div className="h-full bg-terminal animate-[progress_1s_ease-in-out_infinite] origin-left"></div>
                     </div>
-                    <style>{`@keyframes progress { 0% { width: 0%} 100% { width: 100% } }`}</style>
+                    <style>{`@keyframes progress { 0% { width: 0%; transform: translateX(-100%); } 100% { width: 100%; transform: translateX(100%); } }`}</style>
                 </div>
             )}
 
             {/* BATTLE PHASE */}
             {(phase === GamePhase.BATTLE_START || phase === GamePhase.TURN_PLAYER_SELECT || phase === GamePhase.TURN_RESOLVE || phase === GamePhase.GAME_OVER) && player1 && player2 && (
-                <div className="p-2 flex flex-col gap-4 md:gap-6 w-full">
+                <div className="flex flex-col items-center gap-8 w-full animate-enter">
                     
-                    {/* Stats Header */}
-                    <div className="flex justify-between items-end border-b-2 border-terminal pb-4 px-2">
-                        <div className="flex items-center gap-2 md:gap-3">
-                             <img src={player1.user.avatar_url} className="w-8 h-8 md:w-12 md:h-12 border-2 border-terminal bg-terminal/20" alt="P1" />
+                    {/* Score Board */}
+                    <div className="flex justify-between items-center w-full max-w-2xl px-8 py-2 bg-terminal/5 border-y border-terminal/10">
+                         <div className="flex items-center gap-4">
+                             <img src={player1.user.avatar_url} className="w-10 h-10 rounded-sm border border-terminal/30 grayscale hover:grayscale-0 transition-all" alt="P1" />
                              <div>
-                                <div className="font-bold text-sm md:text-lg leading-none text-terminal">{player1.user.login.toUpperCase().slice(0, 8)}</div>
-                                <div className="text-xs text-terminal/70">CARDS: {player1.deck.length}</div>
+                                <div className="font-bold text-terminal">{player1.user.login}</div>
+                                <div className="text-xs text-terminal/50 font-mono">DECK: {player1.deck.length}</div>
                              </div>
-                        </div>
-                        <div className="text-xl md:text-3xl font-bold text-terminal/50">VS</div>
-                        <div className="flex items-center gap-2 md:gap-3 text-right">
+                         </div>
+                         
+                         <div className="text-2xl font-retro font-bold text-terminal/30 tracking-[0.2em]">{player1.score} - {player2.score}</div>
+                         
+                         <div className="flex items-center gap-4 text-right">
                              <div>
-                                <div className="font-bold text-sm md:text-lg leading-none text-terminal">{player2.user.login.toUpperCase().slice(0, 8)}</div>
-                                <div className="text-xs text-terminal/70">CARDS: {player2.deck.length}</div>
+                                <div className="font-bold text-terminal">{player2.user.login}</div>
+                                <div className="text-xs text-terminal/50 font-mono">DECK: {player2.deck.length}</div>
                              </div>
-                             <img src={player2.user.avatar_url} className="w-8 h-8 md:w-12 md:h-12 border-2 border-terminal bg-terminal/20" alt="P2" />
-                        </div>
+                             <img src={player2.user.avatar_url} className="w-10 h-10 rounded-sm border border-terminal/30 grayscale hover:grayscale-0 transition-all" alt="P2" />
+                         </div>
                     </div>
 
-                    {/* Cards Container */}
-                    <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-8 py-2 relative min-h-[350px]">
-                        {/* Player 1 Card (User) */}
-                        <div className="animate-enter relative z-10 w-full md:w-auto flex justify-center">
+                    {/* Arena */}
+                    <div className="flex flex-col md:flex-row justify-center items-center gap-12 relative w-full">
+                        
+                        {/* Player 1 */}
+                        <div className="relative z-10">
                             <Card 
                                 repo={player1.deck[0]} 
                                 isInteractable={phase === GamePhase.TURN_PLAYER_SELECT}
@@ -412,14 +382,21 @@ const App: React.FC = () => {
                                 highlightedStat={selectedStat}
                             />
                             {phase === GamePhase.TURN_PLAYER_SELECT && (
-                                <div className="absolute -left-4 md:-left-12 top-1/2 -translate-y-1/2 text-terminal animate-pulse text-2xl font-bold hidden md:block">
-                                    ▶
+                                <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-terminal animate-bounce hidden md:block">
+                                    <Swords size={32} />
                                 </div>
                             )}
                         </div>
 
-                        {/* Player 2 Card (Opponent) */}
-                        <div className="animate-enter w-full md:w-auto flex justify-center">
+                        {/* VS Divider */}
+                        <div className="flex flex-col items-center justify-center z-0">
+                            <div className="h-24 w-px bg-gradient-to-b from-transparent via-terminal/50 to-transparent"></div>
+                            <div className="my-2 bg-black border border-terminal/30 px-2 py-1 text-xs font-bold text-terminal/60">VS</div>
+                            <div className="h-24 w-px bg-gradient-to-b from-transparent via-terminal/50 to-transparent"></div>
+                        </div>
+
+                        {/* Player 2 */}
+                        <div className="relative z-10">
                             <Card 
                                 repo={player2.deck[0]} 
                                 isHidden={!showResult}
@@ -431,24 +408,34 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Battle Log */}
-                    <BattleLog logs={logs} />
+                    <div className="w-full mt-4">
+                        <BattleLog logs={logs} />
+                    </div>
                 </div>
             )}
 
-            {/* GAME OVER OVERLAY */}
+            {/* GAME OVER MODAL */}
             {phase === GamePhase.GAME_OVER && (
-                 <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-50 p-4 border-4 border-terminal m-[-4px]">
-                    <h2 className="text-6xl font-bold text-terminal mb-4 animate-glitch text-center">GAME<br/>OVER</h2>
-                    <div className="text-2xl text-white mb-8 border-b-2 border-white pb-2">
-                        VICTOR: {player1?.deck.length === 0 ? player2?.user.login : player1?.user.login}
-                    </div>
-                    <button 
-                        onClick={() => { playSound.click(); setPhase(GamePhase.SETUP); }}
-                        onMouseEnter={() => playSound.hover()}
-                        className="retro-button px-8 py-3 text-xl"
-                    >
-                        SYSTEM_REBOOT
-                    </button>
+                 <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                     <div className="bg-[#0a0a0a] border-2 border-terminal p-8 max-w-lg w-full text-center shadow-[0_0_50px_rgba(var(--terminal-main),0.2)]">
+                        <h2 className="text-5xl font-retro text-terminal mb-2 tracking-widest">GAME OVER</h2>
+                        <div className="h-px w-full bg-gradient-to-r from-transparent via-terminal to-transparent mb-8"></div>
+                        
+                        <div className="mb-8">
+                            <div className="text-terminal/60 text-sm uppercase tracking-widest mb-2">Winner</div>
+                            <div className="text-3xl font-bold text-white">
+                                {player1?.deck.length === 0 ? player2?.user.login : player1?.user.login}
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => { playSound.click(); setPhase(GamePhase.SETUP); }}
+                            className="retro-button px-8 py-3 text-lg flex items-center justify-center gap-2 mx-auto w-full"
+                        >
+                            <RotateCcw size={18} />
+                            RESTART SYSTEM
+                        </button>
+                     </div>
                  </div>
             )}
         </div>

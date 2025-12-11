@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
-import { GithubRepo, StatType, STAT_LABELS } from '../types';
+import { GithubRepo, StatType } from '../types';
 import { playSound } from '../services/audioService';
+import { Star, GitFork, Eye, HardDrive, CircleDot, Code2, ShieldAlert } from 'lucide-react';
 
 interface CardProps {
   repo: GithubRepo;
@@ -11,6 +12,14 @@ interface CardProps {
   isLoser?: boolean;
   highlightedStat?: StatType | null;
 }
+
+const STAT_CONFIG: Record<StatType, { label: string; icon: React.ElementType }> = {
+  stargazers_count: { label: 'Stars', icon: Star },
+  forks_count: { label: 'Forks', icon: GitFork },
+  size: { label: 'Size (KB)', icon: HardDrive },
+  open_issues_count: { label: 'Issues', icon: CircleDot },
+  watchers_count: { label: 'Watchers', icon: Eye },
+};
 
 const Card: React.FC<CardProps> = ({ 
   repo, 
@@ -24,86 +33,101 @@ const Card: React.FC<CardProps> = ({
   
   const stats: StatType[] = ['stargazers_count', 'forks_count', 'watchers_count', 'size', 'open_issues_count'];
 
-  // Responsive width: w-full max-w-[320px] on mobile, w-72 on desktop
-  const containerStyle = isWinner 
-    ? 'border-4 border-terminal bg-terminal/10 shadow-[0_0_20px_var(--terminal-main)] scale-[1.02] z-10' 
-    : isLoser 
-      ? 'border-4 border-red-800 opacity-60 grayscale scale-95' 
-      : 'border-2 border-terminal bg-black hover:shadow-[0_0_10px_var(--terminal-main)]';
+  // Base container style
+  let containerStyle = 'bg-black border border-terminal/30 relative overflow-hidden transition-all duration-300 ';
+  
+  if (isWinner) {
+    containerStyle += 'shadow-[0_0_30px_-5px_var(--terminal-main)] border-terminal scale-[1.02] z-10 ';
+  } else if (isLoser) {
+    containerStyle += 'opacity-50 grayscale scale-95 border-red-900 ';
+  } else {
+    containerStyle += 'hover:border-terminal hover:shadow-[0_0_15px_-5px_var(--terminal-main)] ';
+  }
 
   if (isHidden) {
     return (
-      <div className="w-full max-w-[320px] md:w-72 h-80 bg-black border-2 border-dashed border-terminal flex flex-col items-center justify-center p-4 relative overflow-hidden retro-border">
-         <div className="text-terminal text-6xl font-bold animate-pulse">?</div>
-         <div className="mt-4 text-sm font-mono text-terminal text-center">
-           AWAITING<br/>OPPONENT
+      <div className="w-[300px] h-[420px] bg-[#050505] border border-dashed border-terminal/40 flex flex-col items-center justify-center p-6 relative rounded-sm shadow-xl">
+         <div className="text-terminal/20 absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(var(--terminal-main),0.05)_50%,transparent_75%)] bg-[length:10px_10px]"></div>
+         <div className="text-terminal text-6xl font-retro animate-pulse mb-4">?</div>
+         <div className="text-sm font-mono text-terminal/60 text-center tracking-widest">
+           WAITING FOR<br/>OPPONENT...
          </div>
       </div>
     );
   }
 
   return (
-    <div className={`w-full max-w-[320px] md:w-72 min-h-[320px] flex flex-col transition-all duration-300 relative ${containerStyle}`}>
-      {/* Header */}
-      <div className={`p-2 border-b-2 ${isWinner ? 'bg-terminal text-black border-terminal' : isLoser ? 'bg-red-900 text-white border-red-800' : 'bg-terminal/20 text-terminal border-terminal'}`}>
-        <h3 className="font-bold text-lg truncate uppercase tracking-tight" style={{ color: isWinner || isLoser ? undefined : 'var(--syntax-str)' }}>
+    <div className={`w-[300px] h-[420px] flex flex-col rounded-sm ${containerStyle}`}>
+      
+      {/* Header Section */}
+      <div className={`p-4 border-b border-terminal/20 ${isWinner ? 'bg-terminal/10' : 'bg-gradient-to-b from-terminal/5 to-transparent'}`}>
+        <div className="flex justify-between items-start mb-2">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 border border-terminal/30 rounded text-terminal/80 uppercase tracking-wider bg-black">
+                <Code2 size={10} />
+                {repo.language || 'N/A'}
+            </span>
+            <span className="text-[10px] font-mono text-terminal/40">#{repo.id.toString().slice(-4)}</span>
+        </div>
+        <h3 className="font-retro text-2xl leading-none text-terminal tracking-wide truncate mb-1" title={repo.name}>
             {repo.name}
         </h3>
-        <div className="flex justify-between text-xs font-bold opacity-80">
-            <span style={{ color: isWinner || isLoser ? undefined : 'var(--syntax-key)' }}>{repo.language ? repo.language.toUpperCase() : 'UNKNOWN'}</span>
-            <span>#{repo.id.toString().slice(-4)}</span>
-        </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col bg-black p-2">
-        <div className="text-xs h-12 overflow-hidden leading-tight font-mono border-b border-terminal/30 pb-2 mb-2" style={{ color: 'var(--syntax-key)', opacity: 0.8 }}>
-            {repo.description || "NO_DESCRIPTION_AVAILABLE"}
-        </div>
-
-        <table className="w-full text-sm border-collapse">
-            <tbody>
-                {stats.map((stat, idx) => {
-                    const isSelected = highlightedStat === stat;
-                    return (
-                        <tr 
-                            key={stat} 
-                            onClick={() => {
-                                if (isInteractable && !isSelected && onSelectStat) {
-                                    playSound.click();
-                                    onSelectStat(stat);
-                                }
-                            }}
-                            onMouseEnter={() => isInteractable && !isSelected && playSound.hover()}
-                            className={`
-                                transition-colors group
-                                ${isSelected ? 'bg-terminal-selected text-black font-bold' : idx % 2 === 0 ? 'bg-terminal/5' : 'bg-transparent'}
-                                ${isInteractable && !isSelected ? 'hover:bg-terminal hover:text-black cursor-pointer' : ''}
-                            `}
-                        >
-                            <td className="py-2 px-2 border-r border-terminal/20 group-hover:border-black/20" style={{ color: isSelected ? undefined : 'var(--syntax-key)' }}>
-                                {isSelected && <span className="animate-pulse mr-1">▶</span>}
-                                {STAT_LABELS[stat].toUpperCase()}
-                            </td>
-                            <td className="py-2 px-2 text-right" style={{ color: isSelected ? undefined : 'var(--syntax-val)' }}>
-                                <span>
-                                    {stat === 'size' ? `${Math.round(repo[stat] / 1024)}MB` : repo[stat]}
-                                </span>
-                            </td>
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
+      {/* Description Area */}
+      <div className="px-4 py-3 min-h-[60px] bg-black/50">
+        <p className="text-xs text-terminal/60 italic leading-relaxed line-clamp-2 h-8 font-light">
+            {repo.description || "No description provided."}
+        </p>
       </div>
 
-      {/* Footer */}
-      <div className={`p-1 text-[10px] text-center uppercase tracking-widest font-bold ${isWinner ? 'bg-terminal text-black' : 'bg-black text-terminal/50'}`}>
-         {isWinner ? 'WINNER' : isLoser ? 'ELIMINATED' : 'ACTIVE'}
+      {/* Stats Grid */}
+      <div className="flex-1 p-2 bg-black/40 flex flex-col gap-1">
+        {stats.map((stat) => {
+            const config = STAT_CONFIG[stat];
+            const Icon = config.icon;
+            const isSelected = highlightedStat === stat;
+            const value = stat === 'size' ? `${Math.round(repo[stat] / 1024)}MB` : repo[stat].toLocaleString();
+
+            return (
+                <div 
+                    key={stat}
+                    onClick={() => {
+                        if (isInteractable && !isSelected && onSelectStat) {
+                            playSound.click();
+                            onSelectStat(stat);
+                        }
+                    }}
+                    onMouseEnter={() => isInteractable && !isSelected && playSound.hover()}
+                    className={`
+                        grid grid-cols-[24px_1fr_auto] items-center px-3 py-2.5 rounded-sm border border-transparent
+                        transition-all duration-150 cursor-default select-none
+                        ${isSelected ? 'stat-row-selected border-terminal' : 'text-terminal/80 hover:bg-terminal/5 hover:border-terminal/20'}
+                        ${isInteractable && !isSelected ? 'cursor-pointer' : ''}
+                    `}
+                >
+                    <Icon size={14} className={isSelected ? 'text-black' : 'text-terminal/60'} />
+                    <span className={`text-xs uppercase tracking-wider font-medium ${isSelected ? 'text-black' : ''}`}>
+                        {config.label}
+                    </span>
+                    <span className={`font-mono text-sm font-bold ${isSelected ? 'text-black' : 'text-terminal'}`}>
+                        {value}
+                    </span>
+                </div>
+            );
+        })}
+      </div>
+
+      {/* Footer Status */}
+      <div className={`py-1.5 text-[10px] text-center uppercase tracking-[0.2em] font-bold border-t border-terminal/20 ${isWinner ? 'bg-terminal text-black' : isLoser ? 'bg-red-900/50 text-red-200' : 'bg-terminal/5 text-terminal/40'}`}>
+         {isWinner ? 'VICTORY' : isLoser ? 'DEFEAT' : 'READY'}
       </div>
       
-      {/* Glitch Overlay for Loser */}
-      {isLoser && <div className="absolute inset-0 bg-red-500/10 pointer-events-none animate-glitch mix-blend-overlay"></div>}
+      {/* Visual Glitch for Loser */}
+      {isLoser && (
+        <div className="absolute inset-0 bg-red-900/20 mix-blend-overlay pointer-events-none z-20 flex items-center justify-center">
+            <ShieldAlert size={64} className="text-red-500/50 animate-pulse" />
+        </div>
+      )}
     </div>
   );
 };

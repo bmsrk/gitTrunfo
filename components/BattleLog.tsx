@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { BattleLogEntry } from '../types';
+import { Terminal, ChevronRight } from 'lucide-react';
 
 interface BattleLogProps {
   logs: BattleLogEntry[];
@@ -13,40 +14,56 @@ const BattleLog: React.FC<BattleLogProps> = ({ logs }) => {
   }, [logs]);
 
   return (
-    <div className="w-full h-40 bg-black border border-terminal font-mono text-xs overflow-y-auto shadow-[inset_0_0_10px_#000] flex flex-col">
-      {logs.map((log) => {
-        const timeString = new Date(log.timestamp).toLocaleTimeString('en-US', {
-          hour12: false,
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        });
+    <div className="w-full max-w-4xl mx-auto flex flex-col border border-terminal/30 bg-[#0a0a0a] shadow-lg rounded-sm overflow-hidden">
+      {/* Terminal Header */}
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-terminal/10 border-b border-terminal/20">
+        <Terminal size={14} className="text-terminal/60" />
+        <span className="text-[10px] uppercase tracking-widest text-terminal/60 font-bold">Battle_Log.sh</span>
+      </div>
 
-        const bgClass = log.type === 'combat' 
-          ? 'bg-red-900/10 border-l-2 border-red-500/50' 
-          : log.type === 'commentary' 
-            ? 'bg-yellow-900/10 border-l-2 border-yellow-500/50' 
-            : 'hover:bg-terminal/5 border-l-2 border-transparent';
+      {/* Log Content */}
+      <div className="h-48 overflow-y-auto p-2 font-mono text-xs custom-scrollbar">
+        {logs.length === 0 && (
+          <div className="text-terminal/30 text-center mt-10 italic">System initialized. Waiting for input...</div>
+        )}
         
-        const textClass = log.type === 'commentary' 
-          ? 'text-yellow-300' 
-          : log.type === 'combat' 
-            ? 'text-white font-bold' 
-            : 'text-terminal';
+        <div className="flex flex-col gap-0.5">
+          {logs.map((log) => {
+            const date = new Date(log.timestamp);
+            const timeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
 
-        return (
-          <div key={log.id} className={`p-1 border-b border-terminal/10 flex gap-2 ${bgClass}`}>
-             <span className="opacity-40 shrink-0 text-terminal">[{timeString}]</span>
-             <span className={`break-words ${textClass}`}>
-                {log.type === 'info' && '> '}
-                {log.type === 'commentary' && 'Analysis: '}
-                {log.type === 'combat' && 'Combat: '}
-                {log.text}
-             </span>
-          </div>
-        );
-      })}
-      <div ref={bottomRef} />
+            let typeColor = 'text-terminal';
+            let bgStyle = '';
+            
+            if (log.type === 'combat') {
+              typeColor = 'text-red-400';
+              bgStyle = 'bg-red-900/5';
+            } else if (log.type === 'commentary') {
+              typeColor = 'text-yellow-400';
+              bgStyle = 'bg-yellow-900/5';
+            }
+
+            return (
+              <div key={log.id} className={`grid grid-cols-[60px_1fr] gap-3 px-2 py-1 rounded-sm ${bgStyle} hover:bg-white/5 transition-colors`}>
+                 <span className="text-terminal/40 font-light select-none">{timeString}</span>
+                 <span className={`${typeColor} break-words leading-relaxed`}>
+                    {log.type === 'info' && <span className="text-terminal/50 mr-2">$</span>}
+                    {log.type === 'combat' && <span className="text-red-500/50 mr-2 font-bold">!</span>}
+                    {log.type === 'commentary' && <span className="text-yellow-500/50 mr-2">#</span>}
+                    {log.text}
+                 </span>
+              </div>
+            );
+          })}
+        </div>
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Fake Input Line */}
+      <div className="px-3 py-2 border-t border-terminal/20 bg-black flex items-center gap-2">
+        <ChevronRight size={14} className="text-terminal animate-pulse" />
+        <div className="h-4 w-2 bg-terminal/50 cursor-blink"></div>
+      </div>
     </div>
   );
 };

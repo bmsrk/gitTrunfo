@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GitTrunfo: v1.0</title>
+    <title>GitTrunfo: v2.0</title>
     <!-- Retro Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -17,9 +17,12 @@
             colors: {
               terminal: 'var(--terminal-main)',
               'terminal-dim': 'var(--terminal-dim)',
+              'terminal-bg': 'var(--terminal-bg)',
             },
             fontFamily: {
-              mono: ['var(--terminal-font)', 'monospace'],
+              mono: ['"Fira Code"', 'monospace'],
+              retro: ['"VT323"', 'monospace'],
+              pixel: ['"Press Start 2P"', 'cursive'],
             }
           }
         }
@@ -27,25 +30,25 @@
     </script>
     <style>
       :root {
-        --terminal-bg: #050505;
-        --terminal-main: #33ff00;
-        --terminal-dim: #003b00;
-        --terminal-font: 'VT323', monospace;
+        --terminal-bg: #0d1117;
+        --terminal-main: #58a6ff;
+        --terminal-dim: #1f2937;
         
-        /* Syntax Highlighting Defaults (Monochrome Fallback) */
-        --syntax-key: var(--terminal-main);
-        --syntax-val: var(--terminal-main);
-        --syntax-str: var(--terminal-main);
+        /* Syntax Highlighting Defaults */
+        --syntax-key: #ff7b72;
+        --syntax-val: #79c0ff;
+        --syntax-str: #a5d6ff;
       }
       
       body {
-        font-family: var(--terminal-font);
+        font-family: 'Fira Code', monospace;
         background-color: var(--terminal-bg);
         color: var(--terminal-main);
         overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
       }
 
-      /* CRT Scanline Effect - Tuned down for readability */
+      /* CRT Scanline Effect - Subtle */
       body::before {
         content: " ";
         display: block;
@@ -54,62 +57,63 @@
         left: 0;
         bottom: 0;
         right: 0;
-        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
         z-index: 100;
-        background-size: 100% 2px, 3px 100%;
+        background-size: 100% 3px, 3px 100%;
         pointer-events: none;
+        opacity: 0.6;
       }
 
-      /* Retro Scrollbar - High Contrast */
+      /* Retro Scrollbar - Clean */
       ::-webkit-scrollbar {
-        width: 14px;
-        background: #000;
-        border-left: 1px solid var(--terminal-main);
+        width: 10px;
+        background: var(--terminal-bg);
+        border-left: 1px solid var(--terminal-dim);
       }
       ::-webkit-scrollbar-thumb {
+        background: var(--terminal-dim);
+        border: 1px solid var(--terminal-bg);
+      }
+      ::-webkit-scrollbar-thumb:hover {
         background: var(--terminal-main);
-        border: 2px solid #000;
       }
 
       /* Utilities */
       .retro-border {
-        border: 2px solid var(--terminal-main);
-        box-shadow: 4px 4px 0px var(--terminal-dim);
+        border: 1px solid var(--terminal-main);
+        box-shadow: 0 0 10px -2px var(--terminal-main);
       }
       
       .retro-button {
-        background: #000;
-        border: 2px solid var(--terminal-main);
+        font-family: 'VT323', monospace;
+        background: transparent;
+        border: 1px solid var(--terminal-main);
         color: var(--terminal-main);
         cursor: pointer;
-        transition: all 0.1s;
+        transition: all 0.2s ease;
         text-transform: uppercase;
-        font-weight: bold;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
       }
       .retro-button:hover:not(:disabled) {
         background: var(--terminal-main);
-        color: #000;
-        box-shadow: 2px 2px 0px var(--terminal-dim);
-        transform: translate(-1px, -1px);
-      }
-      .retro-button:active:not(:disabled) {
-        transform: translate(1px, 1px);
-        box-shadow: none;
+        color: var(--terminal-bg);
+        box-shadow: 0 0 15px var(--terminal-main);
       }
       .retro-button:disabled {
-        border-color: #333;
-        color: #333;
+        border-color: var(--terminal-dim);
+        color: var(--terminal-dim);
         cursor: not-allowed;
       }
 
-      /* Selected Row Highlight (Inverted) */
-      .bg-terminal-selected {
-        background-color: var(--terminal-main) !important;
-        color: #000 !important;
+      /* Selected Row Highlight */
+      .stat-row-selected {
+        background-color: var(--terminal-main);
+        color: var(--terminal-bg) !important;
       }
-      /* Override syntax colors when selected to ensure contrast */
-      .bg-terminal-selected * {
-        color: #000 !important;
+      .stat-row-selected * {
+        color: var(--terminal-bg) !important;
       }
 
       /* Animations */
@@ -123,31 +127,34 @@
 
       @keyframes glitch {
         0% { transform: translate(0); }
-        20% { transform: translate(-2px, 2px); }
-        40% { transform: translate(-2px, -2px); }
-        60% { transform: translate(2px, 2px); }
-        80% { transform: translate(2px, -2px); }
+        20% { transform: translate(-1px, 1px); }
+        40% { transform: translate(-1px, -1px); }
+        60% { transform: translate(1px, 1px); }
+        80% { transform: translate(1px, -1px); }
         100% { transform: translate(0); }
       }
       .animate-glitch {
-        animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+        animation: glitch 0.2s cubic-bezier(.25, .46, .45, .94) both infinite;
       }
 
       @keyframes slideIn {
-        from { transform: translateY(20px); opacity: 0; }
+        from { transform: translateY(10px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
       }
       .animate-enter {
-        animation: slideIn 0.3s ease-out forwards;
+        animation: slideIn 0.4s ease-out forwards;
       }
     </style>
   <script type="importmap">
 {
   "imports": {
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react": "https://esm.sh/react@18.2.0",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "lucide-react": "https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
-    "react/": "https://esm.sh/react@^19.2.1/",
-    "react": "https://esm.sh/react@^19.2.1",
-    "lucide-react": "https://esm.sh/lucide-react@^0.559.0"
+    "react/": "https://esm.sh/react@^19.2.1/"
   }
 }
 </script>
