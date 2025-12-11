@@ -75,6 +75,36 @@ Try the game live on GitHub Pages! Challenge GitHub users and see whose reposito
 1. **Player vs Player**: Enter two GitHub usernames to battle
 2. **Player vs CPU**: Enter any username and "CPU" as opponent
 
+### Screenshots
+
+#### Battle Screen
+<img src="https://github.com/user-attachments/assets/c0fcd989-f1b7-4e8a-a1c6-599da4e6eb85" alt="Battle Screen" width="600"/>
+
+*The battle arena where strategic decisions are made - choose your stat wisely!*
+
+#### Setup Screen
+<img src="https://github.com/user-attachments/assets/c0815f16-d05a-4208-a16b-1e60c50c51fa" alt="Setup Screen" width="600"/>
+
+*Configure your battle and choose your favorite theme*
+
+#### Victory Screen
+Experience the thrill of victory with an enhanced winning screen featuring:
+- 🏆 Animated trophy with bouncing effects
+- ✨ Green-themed celebration with glowing borders
+- 📊 Detailed stats summary (rounds won, cards remaining)
+- 💬 Encouraging victory message
+
+*(Victory screen will be visible when you win a game!)*
+
+#### Defeat Screen
+Learn from defeat with a motivational losing screen featuring:
+- 💀 Animated skull icon with pulsing effects
+- 🔴 Red-themed defeat screen with dramatic styling
+- 📈 Performance statistics to track your progress
+- 💪 Encouraging message to keep playing
+
+*(Defeat screen will be visible when you lose a game!)*
+
 ---
 
 ## 🛠 Technology Stack

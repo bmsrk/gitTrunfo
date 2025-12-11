@@ -530,7 +530,7 @@ const App: React.FC = () => {
                                     <div className="text-2xl font-bold text-red-300">{player1.score}</div>
                                 </div>
                                 <div>
-                                    <div className="text-red-400/60 text-xs uppercase tracking-wider mb-1">Cards Lost</div>
+                                    <div className="text-red-400/60 text-xs uppercase tracking-wider mb-1">Opponent Cards</div>
                                     <div className="text-2xl font-bold text-red-300">{player2.deck.length}</div>
                                 </div>
                                 <div>
