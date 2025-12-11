@@ -483,7 +483,7 @@ const App: React.FC = () => {
                         </div>
 
                         <button 
-                            onClick={() => { playSound.click(); setPhase(GamePhase.SETUP); }}
+                            onClick={handleQuit}
                             className="relative z-10 bg-green-600 hover:bg-green-500 text-black font-bold px-8 py-3 text-lg flex items-center justify-center gap-2 mx-auto w-full transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(34,197,94,0.6)] border-2 border-green-400"
                         >
                             <RotateCcw size={18} />
@@ -545,7 +545,7 @@ const App: React.FC = () => {
                         </div>
 
                         <button 
-                            onClick={() => { playSound.click(); setPhase(GamePhase.SETUP); }}
+                            onClick={handleQuit}
                             className="relative z-10 bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-3 text-lg flex items-center justify-center gap-2 mx-auto w-full transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] border-2 border-red-400"
                         >
                             <RotateCcw size={18} />
