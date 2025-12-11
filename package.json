@@ -1,17 +1,33 @@
 {
-  "name": "gittrunfo:-battle",
-  "private": true,
-  "version": "0.0.0",
+  "name": "gittrunfo",
+  "description": "A GitHub-powered card battle game",
+  "version": "1.0.0",
   "type": "module",
+  "author": "bmsrk",
+  "license": "MIT",
+  "homepage": "https://bmsrk.github.io/gitTrunfo/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bmsrk/gitTrunfo.git"
+  },
+  "keywords": [
+    "game",
+    "github",
+    "card-battle",
+    "react",
+    "typescript",
+    "vite"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "react-dom": "^19.2.1",
-    "react": "^19.2.1",
-    "lucide-react": "0.344.0"
+    "react-dom": "^18.2.0",
+    "react": "^18.2.0",
+    "lucide-react": "^0.344.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

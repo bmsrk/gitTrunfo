@@ -1,25 +1,64 @@
-// Simple synth for retro sound effects without external assets
+/**
+ * Audio service for retro-style synthesized sound effects
+ * Uses Web Audio API to generate 8-bit style sounds
+ */
 
 const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
-const ctx = new AudioContextClass();
+let ctx: AudioContext | null = null;
 
-const playTone = (freq: number, type: 'square' | 'sawtooth' | 'sine', duration: number, vol: number = 0.1) => {
-  if (ctx.state === 'suspended') ctx.resume();
-  
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, ctx.currentTime);
-  
-  gain.gain.setValueAtTime(vol, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
-  
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  
-  osc.start();
-  osc.stop(ctx.currentTime + duration);
+/**
+ * Initialize audio context (lazy initialization)
+ */
+const getAudioContext = (): AudioContext | null => {
+  if (!ctx && AudioContextClass) {
+    try {
+      ctx = new AudioContextClass();
+    } catch (error) {
+      console.warn('Failed to create AudioContext:', error);
+      return null;
+    }
+  }
+  return ctx;
+};
+
+/**
+ * Play a synthesized tone
+ * @param freq Frequency in Hz
+ * @param type Waveform type
+ * @param duration Duration in seconds
+ * @param vol Volume (0-1)
+ */
+const playTone = (
+  freq: number,
+  type: 'square' | 'sawtooth' | 'sine',
+  duration: number,
+  vol: number = 0.1
+): void => {
+  const audioCtx = getAudioContext();
+  if (!audioCtx) return;
+
+  try {
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (error) {
+    console.warn('Failed to play tone:', error);
+  }
 };
 
 export const playSound = {
