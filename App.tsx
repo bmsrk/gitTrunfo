@@ -5,7 +5,7 @@ import { playSound } from './services/audioService';
 import Card from './components/Card';
 import BattleLog from './components/BattleLog';
 import { Player, GamePhase, BattleLogEntry, StatType, STAT_LABELS } from './types';
-import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert } from 'lucide-react';
+import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert, Cpu } from 'lucide-react';
 
 // CONFIGURATION CONSTANTS
 const THEMES = [
@@ -48,8 +48,8 @@ const THEMES = [
 ];
 
 const FONTS = {
-  vt323: { label: 'RETRO', css: "'VT323', monospace", scale: 'text-base' },
-  code: { label: 'CLEAN', css: "'Fira Code', monospace", scale: 'text-sm' },
+  vt323: { label: 'RETRO', css: "'VT323', monospace" },
+  code: { label: 'CLEAN', css: "'Fira Code', monospace" },
 };
 
 const App: React.FC = () => {
@@ -74,7 +74,6 @@ const App: React.FC = () => {
   useEffect(() => {
     const root = document.documentElement;
     const theme = THEMES.find(t => t.id === currentThemeId) || THEMES[0];
-    const fontConfig = FONTS[currentFont];
     
     root.style.setProperty('--terminal-bg', theme.colors.background);
     root.style.setProperty('--terminal-main', theme.colors.foreground);
@@ -244,63 +243,67 @@ const App: React.FC = () => {
   }, [player1, player2, addLog, resolveRound]);
 
   return (
-    <div className={`min-h-screen flex flex-col items-center py-6 px-4 transition-colors duration-500 overflow-x-hidden bg-[var(--terminal-bg)]`}>
+    <div className="h-screen w-screen flex flex-col items-center bg-[var(--terminal-bg)] overflow-hidden">
         
-        {/* Main Interface Wrapper */}
-        <div className="w-full max-w-5xl flex flex-col gap-6 relative">
-            
-            {/* Header / Nav */}
-            <div className="flex justify-between items-center border-b border-terminal/30 pb-4">
-                <div className="flex flex-col">
-                    <span className="text-2xl md:text-3xl font-retro font-bold text-terminal tracking-widest leading-none">GIT_TRUNFO</span>
-                    <span className="text-[10px] uppercase tracking-[0.3em] text-terminal/50">Card Battle System</span>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                     {phase !== GamePhase.SETUP && (
-                         <button 
-                             onClick={handleQuit} 
-                             className="flex items-center gap-2 px-4 py-1.5 border border-terminal/50 text-terminal text-xs hover:bg-red-900/20 hover:border-red-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider"
-                         >
-                             <X size={14} /> Quit
-                         </button>
-                     )}
-                </div>
+        {/* HEADER */}
+        <div className="w-full shrink-0 h-14 border-b border-terminal/30 px-4 flex justify-between items-center bg-black/20 z-20">
+            <div className="flex flex-col">
+                <span className="text-xl md:text-2xl font-retro font-bold text-terminal tracking-widest leading-none">GIT_TRUNFO</span>
+                <span className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] text-terminal/50">Card Battle System v2.0</span>
             </div>
+            
+            <div className="flex items-center gap-3">
+                 {phase !== GamePhase.SETUP && (
+                     <button 
+                         onClick={handleQuit} 
+                         className="flex items-center gap-1.5 px-3 py-1 border border-terminal/50 text-terminal text-[10px] md:text-xs hover:bg-red-900/20 hover:border-red-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider"
+                     >
+                         <X size={12} /> Quit
+                     </button>
+                 )}
+            </div>
+        </div>
 
+        {/* MAIN CONTENT AREA */}
+        <div className="flex-1 w-full max-w-6xl relative flex flex-col overflow-hidden">
+            
             {/* SETUP PHASE */}
             {phase === GamePhase.SETUP && (
-                <div className="flex flex-col items-center justify-center min-h-[60vh] animate-enter">
+                <div className="flex-1 flex flex-col items-center justify-center p-4 animate-enter overflow-y-auto">
                     
-                    <div className="w-full max-w-lg p-8 border border-terminal/30 bg-terminal/5 shadow-2xl backdrop-blur-sm">
-                        <div className="flex items-center gap-3 mb-6 text-terminal">
+                    <div className="w-full max-w-md p-6 md:p-8 border border-terminal/30 bg-terminal/5 shadow-2xl backdrop-blur-sm rounded-sm">
+                        <div className="flex items-center gap-3 mb-6 text-terminal border-b border-terminal/20 pb-4">
                             <Monitor size={24} />
                             <h2 className="text-xl font-bold uppercase tracking-widest">New Session</h2>
                         </div>
 
-                         <div className="flex flex-col gap-6">
+                         <div className="flex flex-col gap-5">
                              <div className="group">
-                                <label className="text-xs font-bold text-terminal/60 uppercase tracking-wider mb-2 block group-focus-within:text-terminal">Player One (You)</label>
+                                <label className="text-[10px] font-bold text-terminal/60 uppercase tracking-wider mb-1.5 block group-focus-within:text-terminal">Player One</label>
                                 <div className="relative">
-                                    <Github className="absolute left-3 top-3 text-terminal/40" size={18} />
+                                    <Github className="absolute left-3 top-2.5 text-terminal/40 transition-colors group-focus-within:text-terminal" size={16} />
                                     <input 
                                         value={player1Username}
                                         onChange={(e) => setPlayer1Username(e.target.value)}
-                                        className="w-full bg-black border border-terminal/30 p-3 pl-10 text-terminal focus:outline-none focus:border-terminal focus:shadow-[0_0_15px_-5px_var(--terminal-main)] transition-all"
+                                        className="w-full bg-black/50 border border-terminal/30 py-2 pl-9 pr-3 text-sm text-terminal focus:outline-none focus:border-terminal focus:bg-black focus:shadow-[0_0_15px_-5px_var(--terminal-main)] transition-all"
                                         placeholder="GitHub Username"
                                     />
                                 </div>
                              </div>
                              
                              <div className="group">
-                                <label className="text-xs font-bold text-terminal/60 uppercase tracking-wider mb-2 block group-focus-within:text-terminal">Player Two (Opponent)</label>
+                                <label className="text-[10px] font-bold text-terminal/60 uppercase tracking-wider mb-1.5 block group-focus-within:text-terminal">Opponent</label>
                                 <div className="relative">
-                                    <Github className="absolute left-3 top-3 text-terminal/40" size={18} />
+                                    {player2Username.toLowerCase() === 'cpu' ? (
+                                      <Cpu className="absolute left-3 top-2.5 text-terminal/40 transition-colors group-focus-within:text-terminal" size={16} />
+                                    ) : (
+                                      <Github className="absolute left-3 top-2.5 text-terminal/40 transition-colors group-focus-within:text-terminal" size={16} />
+                                    )}
                                     <input 
                                         value={player2Username}
                                         onChange={(e) => setPlayer2Username(e.target.value)}
-                                        className="w-full bg-black border border-terminal/30 p-3 pl-10 text-terminal focus:outline-none focus:border-terminal focus:shadow-[0_0_15px_-5px_var(--terminal-main)] transition-all"
-                                        placeholder="GitHub Username"
+                                        className="w-full bg-black/50 border border-terminal/30 py-2 pl-9 pr-3 text-sm text-terminal focus:outline-none focus:border-terminal focus:bg-black focus:shadow-[0_0_15px_-5px_var(--terminal-main)] transition-all"
+                                        placeholder="Username or 'CPU'"
                                     />
                                 </div>
                              </div>
@@ -310,7 +313,7 @@ const App: React.FC = () => {
                              <button 
                                 onClick={handleStartGame}
                                 onMouseEnter={() => playSound.hover()}
-                                className="retro-button py-4 text-lg font-bold mt-2"
+                                className="retro-button py-3 text-lg font-bold mt-2 hover:tracking-[0.2em]"
                              >
                                 INITIALIZE BATTLE
                              </button>
@@ -318,12 +321,12 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Theme Selector */}
-                    <div className="mt-8 flex gap-4 text-xs text-terminal/40">
+                    <div className="mt-8 grid grid-cols-3 gap-2 text-[10px] md:text-xs text-terminal/40">
                          {THEMES.map(t => (
                              <button
                                  key={t.id}
                                  onClick={() => { playSound.click(); setCurrentThemeId(t.id); }}
-                                 className={`px-3 py-1 border border-transparent hover:text-terminal transition-colors ${currentThemeId === t.id ? 'text-terminal border-b-terminal' : ''}`}
+                                 className={`px-3 py-1.5 border border-transparent hover:text-terminal hover:border-terminal/30 transition-all ${currentThemeId === t.id ? 'text-terminal border-b-terminal bg-terminal/5' : ''}`}
                              >
                                  {t.label}
                              </button>
@@ -334,10 +337,10 @@ const App: React.FC = () => {
 
             {/* LOADING PHASE */}
             {phase === GamePhase.LOADING && (
-                <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                    <div className="text-6xl font-retro text-terminal animate-pulse mb-8">LOADING</div>
-                    <div className="w-64 h-1 bg-terminal/20 overflow-hidden">
-                        <div className="h-full bg-terminal animate-[progress_1s_ease-in-out_infinite] origin-left"></div>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                    <div className="text-4xl md:text-6xl font-retro text-terminal animate-pulse mb-8">LOADING</div>
+                    <div className="w-64 h-0.5 bg-terminal/20 overflow-hidden relative">
+                        <div className="absolute inset-0 bg-terminal animate-[progress_1s_ease-in-out_infinite] origin-left"></div>
                     </div>
                     <style>{`@keyframes progress { 0% { width: 0%; transform: translateX(-100%); } 100% { width: 100%; transform: translateX(100%); } }`}</style>
                 </div>
@@ -345,34 +348,52 @@ const App: React.FC = () => {
 
             {/* BATTLE PHASE */}
             {(phase === GamePhase.BATTLE_START || phase === GamePhase.TURN_PLAYER_SELECT || phase === GamePhase.TURN_RESOLVE || phase === GamePhase.GAME_OVER) && player1 && player2 && (
-                <div className="flex flex-col items-center gap-8 w-full animate-enter">
+                <div className="flex-1 flex flex-col w-full h-full relative">
                     
                     {/* Score Board */}
-                    <div className="flex justify-between items-center w-full max-w-2xl px-8 py-2 bg-terminal/5 border-y border-terminal/10">
-                         <div className="flex items-center gap-4">
-                             <img src={player1.user.avatar_url} className="w-10 h-10 rounded-sm border border-terminal/30 grayscale hover:grayscale-0 transition-all" alt="P1" />
-                             <div>
-                                <div className="font-bold text-terminal">{player1.user.login}</div>
-                                <div className="text-xs text-terminal/50 font-mono">DECK: {player1.deck.length}</div>
+                    <div className="shrink-0 flex justify-between items-center w-full px-4 py-2 bg-terminal/5 border-b border-terminal/10 z-10">
+                         <div className="flex items-center gap-3">
+                             <img src={player1.user.avatar_url} className="w-8 h-8 rounded-sm border border-terminal/30" alt="P1" />
+                             <div className="leading-tight">
+                                <div className="font-bold text-sm text-terminal">{player1.user.login}</div>
+                                <div className="text-[10px] text-terminal/50 font-mono">CARDS: {player1.deck.length}</div>
                              </div>
                          </div>
                          
-                         <div className="text-2xl font-retro font-bold text-terminal/30 tracking-[0.2em]">{player1.score} - {player2.score}</div>
+                         <div className="text-xl md:text-3xl font-retro font-bold text-terminal/30 tracking-[0.2em]">{player1.score} - {player2.score}</div>
                          
-                         <div className="flex items-center gap-4 text-right">
-                             <div>
-                                <div className="font-bold text-terminal">{player2.user.login}</div>
-                                <div className="text-xs text-terminal/50 font-mono">DECK: {player2.deck.length}</div>
+                         <div className="flex items-center gap-3 text-right">
+                             <div className="leading-tight">
+                                <div className="font-bold text-sm text-terminal">{player2.user.login}</div>
+                                <div className="text-[10px] text-terminal/50 font-mono">CARDS: {player2.deck.length}</div>
                              </div>
-                             <img src={player2.user.avatar_url} className="w-10 h-10 rounded-sm border border-terminal/30 grayscale hover:grayscale-0 transition-all" alt="P2" />
+                             <img src={player2.user.avatar_url} className="w-8 h-8 rounded-sm border border-terminal/30" alt="P2" />
                          </div>
                     </div>
 
-                    {/* Arena */}
-                    <div className="flex flex-col md:flex-row justify-center items-center gap-12 relative w-full">
+                    {/* Arena - Responsive Layout */}
+                    <div className="flex-1 flex flex-col md:flex-row justify-center items-center relative overflow-hidden p-2 md:p-6 gap-2 md:gap-16">
                         
-                        {/* Player 1 */}
-                        <div className="relative z-10">
+                        {/* Mobile: Opponent is on top, smaller */}
+                        <div className={`order-1 md:order-3 transition-all duration-500 relative z-0 ${phase === GamePhase.TURN_PLAYER_SELECT ? 'scale-90 opacity-80 md:scale-100 md:opacity-100' : 'scale-100'}`}>
+                            <Card 
+                                repo={player2.deck[0]} 
+                                isHidden={!showResult}
+                                isWinner={showResult && roundWinner === 'p2'}
+                                isLoser={showResult && roundWinner === 'p1'}
+                                highlightedStat={selectedStat}
+                            />
+                        </div>
+
+                        {/* VS Divider */}
+                        <div className="order-2 flex flex-col items-center justify-center z-0 shrink-0 opacity-50">
+                            <div className="hidden md:block h-16 w-px bg-gradient-to-b from-transparent via-terminal/50 to-transparent"></div>
+                            <div className="my-1 md:my-2 bg-black border border-terminal/30 px-2 py-0.5 text-[10px] font-bold text-terminal/60">VS</div>
+                            <div className="hidden md:block h-16 w-px bg-gradient-to-b from-transparent via-terminal/50 to-transparent"></div>
+                        </div>
+
+                        {/* Player 1 (User) */}
+                        <div className="order-3 md:order-1 relative z-10">
                             <Card 
                                 repo={player1.deck[0]} 
                                 isInteractable={phase === GamePhase.TURN_PLAYER_SELECT}
@@ -382,33 +403,16 @@ const App: React.FC = () => {
                                 highlightedStat={selectedStat}
                             />
                             {phase === GamePhase.TURN_PLAYER_SELECT && (
-                                <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-terminal animate-bounce hidden md:block">
-                                    <Swords size={32} />
+                                <div className="absolute -right-6 md:-left-8 top-1/2 -translate-y-1/2 text-terminal animate-bounce pointer-events-none">
+                                    <Swords size={24} />
                                 </div>
                             )}
                         </div>
 
-                        {/* VS Divider */}
-                        <div className="flex flex-col items-center justify-center z-0">
-                            <div className="h-24 w-px bg-gradient-to-b from-transparent via-terminal/50 to-transparent"></div>
-                            <div className="my-2 bg-black border border-terminal/30 px-2 py-1 text-xs font-bold text-terminal/60">VS</div>
-                            <div className="h-24 w-px bg-gradient-to-b from-transparent via-terminal/50 to-transparent"></div>
-                        </div>
-
-                        {/* Player 2 */}
-                        <div className="relative z-10">
-                            <Card 
-                                repo={player2.deck[0]} 
-                                isHidden={!showResult}
-                                isWinner={showResult && roundWinner === 'p2'}
-                                isLoser={showResult && roundWinner === 'p1'}
-                                highlightedStat={selectedStat}
-                            />
-                        </div>
                     </div>
 
-                    {/* Battle Log */}
-                    <div className="w-full mt-4">
+                    {/* Battle Log - Fixed Bottom */}
+                    <div className="shrink-0 h-[120px] md:h-[140px] w-full border-t border-terminal/20 bg-black z-20">
                         <BattleLog logs={logs} />
                     </div>
                 </div>
@@ -416,9 +420,9 @@ const App: React.FC = () => {
 
             {/* GAME OVER MODAL */}
             {phase === GamePhase.GAME_OVER && (
-                 <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                 <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-enter">
                      <div className="bg-[#0a0a0a] border-2 border-terminal p-8 max-w-lg w-full text-center shadow-[0_0_50px_rgba(var(--terminal-main),0.2)]">
-                        <h2 className="text-5xl font-retro text-terminal mb-2 tracking-widest">GAME OVER</h2>
+                        <h2 className="text-4xl md:text-5xl font-retro text-terminal mb-2 tracking-widest">GAME OVER</h2>
                         <div className="h-px w-full bg-gradient-to-r from-transparent via-terminal to-transparent mb-8"></div>
                         
                         <div className="mb-8">
@@ -430,7 +434,7 @@ const App: React.FC = () => {
 
                         <button 
                             onClick={() => { playSound.click(); setPhase(GamePhase.SETUP); }}
-                            className="retro-button px-8 py-3 text-lg flex items-center justify-center gap-2 mx-auto w-full"
+                            className="retro-button px-8 py-3 text-lg flex items-center justify-center gap-2 mx-auto w-full hover:bg-terminal hover:text-black"
                         >
                             <RotateCcw size={18} />
                             RESTART SYSTEM
