@@ -1,11 +1,16 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import { BattleLogEntry } from '../types';
 import { Terminal, ChevronRight } from 'lucide-react';
 
 interface BattleLogProps {
+  /** Array of log entries to display */
   logs: BattleLogEntry[];
 }
 
+/**
+ * BattleLog component displays a terminal-style log of game events
+ * Auto-scrolls to the latest entry
+ */
 const BattleLog: React.FC<BattleLogProps> = ({ logs }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -70,4 +75,4 @@ const BattleLog: React.FC<BattleLogProps> = ({ logs }) => {
   );
 };
 
-export default BattleLog;
+export default memo(BattleLog);

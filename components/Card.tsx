@@ -4,12 +4,19 @@ import { playSound } from '../services/audioService';
 import { Star, GitFork, Eye, HardDrive, CircleDot, Code2, ShieldAlert } from 'lucide-react';
 
 interface CardProps {
+  /** Repository data to display on the card */
   repo: GithubRepo;
+  /** Whether to show card back (hidden state) */
   isHidden?: boolean;
+  /** Callback when a stat is selected */
   onSelectStat?: (stat: StatType) => void;
+  /** Whether stats can be clicked */
   isInteractable?: boolean;
+  /** Whether this card won the round */
   isWinner?: boolean;
+  /** Whether this card lost the round */
   isLoser?: boolean;
+  /** Which stat was used in the comparison */
   highlightedStat?: StatType | null;
 }
 
@@ -21,6 +28,10 @@ const STAT_CONFIG: Record<StatType, { label: string; icon: React.ElementType }> 
   watchers_count: { label: 'Watchers', icon: Eye },
 };
 
+/**
+ * Card component displays a repository as a battle card
+ * Shows repo stats that can be selected for battles
+ */
 const Card: React.FC<CardProps> = ({ 
   repo, 
   isHidden = false, 
