@@ -5,7 +5,7 @@ import { Star, GitFork, Eye, HardDrive, CircleDot, Code2, ShieldAlert } from 'lu
 
 interface CardProps {
   /** Repository data to display on the card */
-  repo: GithubRepo;
+  repo: GithubRepo | undefined;
   /** Whether to show card back (hidden state) */
   isHidden?: boolean;
   /** Callback when a stat is selected */
@@ -71,6 +71,19 @@ const Card: React.FC<CardProps> = ({
     );
   }
 
+  // Early return if repo is undefined
+  if (!repo) {
+    return (
+      <div className={`${cardSizeClasses} bg-[#050505] border border-dashed border-terminal/40 flex flex-col items-center justify-center p-6 relative rounded-sm shadow-xl`}>
+         <div className="text-terminal/20 absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(var(--terminal-main),0.05)_50%,transparent_75%)] bg-[length:10px_10px]"></div>
+         <div className="text-terminal text-6xl font-retro animate-pulse mb-4">?</div>
+         <div className="text-xs md:text-sm font-mono text-terminal/60 text-center tracking-widest">
+           NO DATA
+         </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col rounded-sm ${containerStyle}`}>
       
@@ -79,9 +92,9 @@ const Card: React.FC<CardProps> = ({
         <div className="flex justify-between items-start mb-2">
             <span className="inline-flex items-center gap-1 text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 border border-terminal/30 rounded text-terminal/80 uppercase tracking-wider bg-black">
                 <Code2 size={10} />
-                {repo.language || 'N/A'}
+                {repo.language ?? 'N/A'}
             </span>
-            <span className="text-[9px] md:text-[10px] font-mono text-terminal/40">#{repo.id.toString().slice(-4)}</span>
+            <span className="text-[9px] md:text-[10px] font-mono text-terminal/40">{typeof repo.id !== 'undefined' ? `#${repo.id.toString().slice(-4)}` : '#----'}</span>
         </div>
         <h3 className="font-retro text-xl md:text-2xl leading-none text-terminal tracking-wide truncate mb-1" title={repo.name}>
             {repo.name}
@@ -91,7 +104,7 @@ const Card: React.FC<CardProps> = ({
       {/* Description Area - Hidden on very small screens if needed, or kept terse */}
       <div className="px-3 md:px-4 py-2 md:py-3 min-h-[50px] md:min-h-[60px] bg-black/50 border-b border-terminal/10">
         <p className="text-[10px] md:text-xs text-terminal/60 italic leading-relaxed line-clamp-2 font-light">
-            {repo.description || "No description provided."}
+            {repo.description ?? "No description provided."}
         </p>
       </div>
 
@@ -101,7 +114,8 @@ const Card: React.FC<CardProps> = ({
             const config = STAT_CONFIG[stat];
             const Icon = config.icon;
             const isSelected = highlightedStat === stat;
-            const value = stat === 'size' ? `${Math.round(repo[stat] / 1024)}MB` : repo[stat].toLocaleString();
+            const rawStat = typeof (repo as any)[stat] === 'number' ? (repo as any)[stat] : 0;
+            const value = stat === 'size' ? `${Math.round(rawStat / 1024)}MB` : rawStat.toLocaleString();
 
             const isRowInteractable = isInteractable && !isSelected;
 
