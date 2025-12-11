@@ -5,7 +5,15 @@ import { playSound } from './services/audioService';
 import Card from './components/Card';
 import BattleLog from './components/BattleLog';
 import { Player, GamePhase, BattleLogEntry, StatType, STAT_LABELS } from './types';
-import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert, Cpu, Trophy, Skull, BookOpen, Settings, Star, GitFork, Eye, HardDrive, CircleDot, Code2 } from 'lucide-react';
+import { Swords, RotateCcw, X, Github, Monitor, ShieldAlert, Cpu, Trophy, Skull, BookOpen, Settings, Star, GitFork, Eye, HardDrive, CircleDot, Code2, Lightbulb } from 'lucide-react';
+
+// Z-INDEX CONSTANTS
+const Z_INDEX = {
+  HEADER: 20,
+  BATTLE_LOG: 20,
+  GAME_OVER_MODAL: 50,
+  MODAL: 100,
+};
 
 // CONFIGURATION CONSTANTS
 const THEMES = [
@@ -23,7 +31,7 @@ const THEMES = [
       accentHover: '#FF8AA0', // Lighter pink for hover
       success: '#7CFFA1',     // Green for success states
       warning: '#FFDD57',     // Yellow for warnings
-      error: '#FF6B81',       // Pink/Red for errors
+      error: '#FF3355',       // Brighter red for errors
       muted: '#2A3440',       // Muted background
     }
   },
@@ -59,7 +67,7 @@ const THEMES = [
       accentHover: "#ff669d", // Lighter magenta
       success: "#a6e22e",     // Green
       warning: "#e6db74",     // Yellow
-      error: "#f92672",       // Pink/Red
+      error: "#ff1744",       // Brighter red
       muted: "#3e3d32",       // Darker bg
     }
   },
@@ -77,7 +85,7 @@ const THEMES = [
       accentHover: "#ff2d75", // Lighter hot pink
       success: "#00ff9f",     // Neon green
       warning: "#ffd500",     // Yellow
-      error: "#ff0055",       // Hot pink
+      error: "#ff2233",       // Bright red
       muted: "#241e2e",       // Dark purple
     }
   },
@@ -328,7 +336,7 @@ const App: React.FC = () => {
 
   // RulesModal Component
   const RulesModal = () => (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-enter">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-enter" style={{ zIndex: Z_INDEX.MODAL }}>
       <div className="bg-[var(--terminal-bg)] border-2 border-[var(--accent-primary)] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_40px_rgba(var(--accent-primary),0.3)]">
         {/* Header */}
         <div className="sticky top-0 bg-[var(--terminal-bg)] border-b border-[var(--accent-primary)]/30 p-4 flex justify-between items-center z-10">
@@ -448,7 +456,9 @@ const App: React.FC = () => {
 
           {/* Strategy Tips */}
           <section>
-            <h3 className="text-lg font-bold text-[var(--syntax-val)] uppercase tracking-wider mb-3">💡 Strategy Tips</h3>
+            <h3 className="text-lg font-bold text-[var(--syntax-val)] uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Lightbulb size={18} /> Strategy Tips
+            </h3>
             <ul className="space-y-2 text-terminal/80 text-sm list-disc list-inside">
               <li>Choose stats strategically based on your repository type</li>
               <li>Popular projects tend to have high stars and forks</li>
@@ -473,7 +483,7 @@ const App: React.FC = () => {
 
   // SettingsModal Component
   const SettingsModal = () => (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-enter">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-enter" style={{ zIndex: Z_INDEX.MODAL }}>
       <div className="bg-[var(--terminal-bg)] border-2 border-[var(--syntax-val)] max-w-lg w-full shadow-[0_0_40px_rgba(var(--syntax-val),0.3)]">
         {/* Header */}
         <div className="bg-[var(--terminal-bg)] border-b border-[var(--syntax-val)]/30 p-4 flex justify-between items-center">
@@ -549,7 +559,7 @@ const App: React.FC = () => {
     <div className="h-screen w-screen flex flex-col items-center bg-[var(--terminal-bg)] overflow-hidden">
         
         {/* HEADER */}
-        <div className="w-full shrink-0 h-14 border-b border-terminal/30 px-4 flex justify-between items-center bg-black/20 z-20">
+        <div className="w-full shrink-0 h-14 border-b border-terminal/30 px-4 flex justify-between items-center bg-black/20" style={{ zIndex: Z_INDEX.HEADER }}>
             <div className="flex flex-col">
                 <span className="text-xl md:text-2xl font-retro font-bold text-terminal tracking-widest leading-none">GIT_TRUNFO</span>
                 <span className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] text-terminal/50">Card Battle System v2.0</span>
@@ -731,7 +741,7 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Battle Log - Fixed Bottom */}
-                    <div className="shrink-0 h-[120px] md:h-[140px] w-full border-t border-terminal/20 bg-black z-20">
+                    <div className="shrink-0 h-[120px] md:h-[140px] w-full border-t border-terminal/20 bg-black" style={{ zIndex: Z_INDEX.BATTLE_LOG }}>
                         <BattleLog logs={logs} />
                     </div>
                 </div>
@@ -739,7 +749,7 @@ const App: React.FC = () => {
 
             {/* GAME OVER MODAL - WINNING SCREEN */}
             {phase === GamePhase.GAME_OVER && player1 && player2 && player2.deck.length === 0 && (
-                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-enter">
+                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-enter" style={{ zIndex: Z_INDEX.GAME_OVER_MODAL }}>
                      <div className="bg-gradient-to-b from-green-950/80 to-[#0a0a0a] border-4 border-green-500/50 p-8 max-w-2xl w-full text-center shadow-[0_0_80px_rgba(34,197,94,0.4)] relative overflow-hidden">
                         
                         {/* Animated Background Effect */}
@@ -802,7 +812,7 @@ const App: React.FC = () => {
             
             {/* GAME OVER MODAL - LOSING SCREEN */}
             {phase === GamePhase.GAME_OVER && player1 && player2 && player1.deck.length === 0 && (
-                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-enter">
+                 <div className="absolute inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-enter" style={{ zIndex: Z_INDEX.GAME_OVER_MODAL }}>
                      <div className="bg-gradient-to-b from-red-950/80 to-[#0a0a0a] border-4 border-red-500/50 p-8 max-w-2xl w-full text-center shadow-[0_0_80px_rgba(239,68,68,0.4)] relative overflow-hidden">
                         
                         {/* Glitch Effect Background */}
