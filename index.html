@@ -31,6 +31,11 @@
         --terminal-main: #33ff00;
         --terminal-dim: #003b00;
         --terminal-font: 'VT323', monospace;
+        
+        /* Syntax Highlighting Defaults (Monochrome Fallback) */
+        --syntax-key: var(--terminal-main);
+        --syntax-val: var(--terminal-main);
+        --syntax-str: var(--terminal-main);
       }
       
       body {
@@ -99,8 +104,12 @@
 
       /* Selected Row Highlight (Inverted) */
       .bg-terminal-selected {
-        background-color: var(--terminal-main);
-        color: #000;
+        background-color: var(--terminal-main) !important;
+        color: #000 !important;
+      }
+      /* Override syntax colors when selected to ensure contrast */
+      .bg-terminal-selected * {
+        color: #000 !important;
       }
 
       /* Animations */

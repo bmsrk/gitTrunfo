@@ -7,12 +7,33 @@ import BattleLog from './components/BattleLog';
 import { Player, GamePhase, BattleLogEntry, StatType, STAT_LABELS } from './types';
 
 // CONFIGURATION CONSTANTS
+// Palette: Key (Labels), Val (Numbers), Str (Repo Name/Strings)
 const COLORS = {
   green: { label: 'PHOSPHOR', color: '#33ff00' },
   amber: { label: 'AMBER', color: '#ffb000' },
   cyan: { label: 'CYAN', color: '#00ffff' },
   pink: { label: 'HOT PINK', color: '#ff0099' },
   white: { label: 'PAPER', color: '#ffffff' },
+  vscode: { 
+    label: 'VSCODE', 
+    color: '#007acc', // Status Bar Blue for Main
+    palette: {
+        key: '#9cdcfe', // Light Blue
+        val: '#b5cea8', // Light Green
+        str: '#ce9178', // Orange
+        dim: '#1e1e1e' // Darker bg for border dim
+    }
+  },
+  dracula: { 
+    label: 'DRACULA', 
+    color: '#bd93f9', // Purple
+    palette: {
+        key: '#ff79c6', // Pink
+        val: '#8be9fd', // Cyan
+        str: '#f1fa8c', // Yellow
+        dim: '#282a36'
+    }
+  }
 };
 
 const FONTS = {
@@ -43,12 +64,34 @@ const App: React.FC = () => {
   // Apply Theme & Font
   useEffect(() => {
     const root = document.documentElement;
+    // @ts-ignore
     const colorConfig = COLORS[currentColor];
     const fontConfig = FONTS[currentFont];
     
+    // Main Color
     root.style.setProperty('--terminal-main', colorConfig.color);
-    root.style.setProperty('--terminal-dim', `${colorConfig.color}40`); // Higher contrast dim
+    
+    // Dim Color
+    if (colorConfig.palette?.dim) {
+        root.style.setProperty('--terminal-dim', colorConfig.palette.dim);
+    } else {
+        root.style.setProperty('--terminal-dim', `${colorConfig.color}40`);
+    }
+
+    // Font
     root.style.setProperty('--terminal-font', fontConfig.css);
+
+    // Syntax Highlighting
+    if (colorConfig.palette) {
+        root.style.setProperty('--syntax-key', colorConfig.palette.key);
+        root.style.setProperty('--syntax-val', colorConfig.palette.val);
+        root.style.setProperty('--syntax-str', colorConfig.palette.str);
+    } else {
+        // Monochrome Fallback
+        root.style.setProperty('--syntax-key', colorConfig.color);
+        root.style.setProperty('--syntax-val', colorConfig.color);
+        root.style.setProperty('--syntax-str', colorConfig.color);
+    }
 
   }, [currentColor, currentFont]);
 
@@ -199,24 +242,25 @@ const App: React.FC = () => {
   }, [player1, player2, addLog, resolveRound]);
 
   return (
-    <div className={`min-h-screen p-4 flex flex-col items-center justify-center gap-4 transition-colors duration-500 ${FONTS[currentFont].scale}`}>
+    <div className={`min-h-screen md:p-4 flex flex-col items-center justify-center gap-4 transition-colors duration-500 ${FONTS[currentFont].scale} overflow-x-hidden`}>
         
         {/* Main Interface Wrapper */}
-        <div className="w-full max-w-2xl bg-black border-4 border-terminal p-2 shadow-[10px_10px_0px_rgba(0,0,0,0.5)] relative">
+        <div className="w-full max-w-4xl bg-black md:border-4 border-terminal p-2 md:p-4 shadow-[10px_10px_0px_rgba(0,0,0,0.5)] relative min-h-screen md:min-h-0">
             
             {/* Window Header */}
             <div className="bg-terminal text-black px-3 py-2 font-bold flex justify-between items-center mb-6">
-                <span className="tracking-wider">GIT_TRUNFO_SYSTEM_V1.0</span>
-                <div className="flex items-center gap-4">
+                <span className="tracking-wider hidden md:inline">GIT_TRUNFO_SYSTEM_V1.0</span>
+                <span className="tracking-wider md:hidden">GIT_TRUNFO</span>
+                <div className="flex items-center gap-2 md:gap-4">
                      {player1 && player2 && (
-                         <span className="bg-black text-terminal px-3 border border-black">
-                            SCR: {player1.score.toString().padStart(2, '0')} - {player2.score.toString().padStart(2, '0')}
+                         <span className="bg-black text-terminal px-2 md:px-3 text-xs md:text-base border border-black">
+                            {player1.score.toString().padStart(2, '0')} - {player2.score.toString().padStart(2, '0')}
                          </span>
                      )}
                      {phase !== GamePhase.SETUP && (
                          <button 
                              onClick={handleQuit} 
-                             className="bg-red-600 text-white px-3 hover:bg-white hover:text-red-600 font-bold border border-black"
+                             className="bg-red-600 text-white px-2 md:px-3 hover:bg-white hover:text-red-600 font-bold border border-black"
                          >
                              X
                          </button>
@@ -226,8 +270,8 @@ const App: React.FC = () => {
 
             {/* SETUP PHASE */}
             {phase === GamePhase.SETUP && (
-                <div className="p-4 flex flex-col gap-6 items-center">
-                    <h1 className="text-5xl font-bold tracking-widest text-terminal mb-2 text-center leading-none">
+                <div className="p-4 flex flex-col gap-6 items-center w-full">
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-widest text-terminal mb-2 text-center leading-none">
                         GIT<br/>TRUNFO
                     </h1>
                     
@@ -237,25 +281,25 @@ const App: React.FC = () => {
                             <input 
                                 value={player1Username}
                                 onChange={(e) => setPlayer1Username(e.target.value)}
-                                className="w-full bg-black border-2 border-terminal p-3 text-lg focus:outline-none focus:bg-terminal/10"
+                                className="w-full bg-black border-2 border-terminal p-3 text-lg focus:outline-none focus:bg-terminal/10 text-terminal"
                             />
                          </div>
                          <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold bg-terminal text-black w-fit px-1">OPPONENT_ID (OR 'CPU')</label>
+                            <label className="text-xs font-bold bg-terminal text-black w-fit px-1">OPPONENT_ID</label>
                             <input 
                                 value={player2Username}
                                 onChange={(e) => setPlayer2Username(e.target.value)}
-                                className="w-full bg-black border-2 border-terminal p-3 text-lg focus:outline-none focus:bg-terminal/10"
+                                className="w-full bg-black border-2 border-terminal p-3 text-lg focus:outline-none focus:bg-terminal/10 text-terminal"
                             />
                          </div>
                     </div>
 
-                    {error && <div className="text-white bg-red-600 p-2 font-bold w-full text-center border-2 border-white">ERROR: {error}</div>}
+                    {error && <div className="text-white bg-red-600 p-2 font-bold w-full max-w-md text-center border-2 border-white">ERROR: {error}</div>}
 
                     <button 
                         onClick={handleStartGame}
                         onMouseEnter={() => playSound.hover()}
-                        className="retro-button px-12 py-4 text-2xl tracking-widest mt-4 w-full max-w-md"
+                        className="retro-button px-12 py-4 text-xl md:text-2xl tracking-widest mt-4 w-full max-w-md"
                     >
                         START_GAME
                     </button>
@@ -266,15 +310,17 @@ const App: React.FC = () => {
                         
                         <div className="flex flex-col gap-4">
                             {/* Colors */}
-                            <div className="flex justify-between items-center border-b border-terminal/20 pb-2">
-                                <span className="text-sm font-bold">DISPLAY_COLOR:</span>
-                                <div className="flex gap-2">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-terminal/20 pb-2 gap-2">
+                                <span className="text-sm font-bold text-terminal">DISPLAY_COLOR:</span>
+                                <div className="flex flex-wrap gap-2">
                                     {(Object.keys(COLORS) as Array<keyof typeof COLORS>).map(c => (
                                         <button
                                             key={c}
                                             onClick={() => { playSound.click(); setCurrentColor(c); }}
                                             className={`w-6 h-6 border-2 transition-transform ${currentColor === c ? 'scale-125 border-white ring-1 ring-black' : 'border-transparent opacity-50 hover:opacity-100 hover:scale-110'}`}
+                                            // @ts-ignore
                                             style={{ backgroundColor: COLORS[c].color }}
+                                            // @ts-ignore
                                             title={COLORS[c].label}
                                         />
                                     ))}
@@ -282,14 +328,14 @@ const App: React.FC = () => {
                             </div>
 
                             {/* Fonts */}
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm font-bold">FONT_FACE:</span>
-                                <div className="flex gap-2">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                                <span className="text-sm font-bold text-terminal">FONT_FACE:</span>
+                                <div className="flex flex-wrap gap-2">
                                     {(Object.keys(FONTS) as Array<keyof typeof FONTS>).map(f => (
                                         <button
                                             key={f}
                                             onClick={() => { playSound.click(); setCurrentFont(f); }}
-                                            className={`px-2 py-1 text-[10px] border border-terminal transition-all hover:bg-terminal hover:text-black uppercase ${currentFont === f ? 'bg-terminal text-black font-bold' : ''}`}
+                                            className={`px-2 py-1 text-[10px] border border-terminal transition-all hover:bg-terminal hover:text-black uppercase ${currentFont === f ? 'bg-terminal text-black font-bold' : 'text-terminal'}`}
                                         >
                                             {FONTS[f].label}
                                         </button>
@@ -318,31 +364,31 @@ const App: React.FC = () => {
 
             {/* BATTLE PHASE */}
             {(phase === GamePhase.BATTLE_START || phase === GamePhase.TURN_PLAYER_SELECT || phase === GamePhase.TURN_RESOLVE || phase === GamePhase.GAME_OVER) && player1 && player2 && (
-                <div className="p-2 flex flex-col gap-6">
+                <div className="p-2 flex flex-col gap-4 md:gap-6 w-full">
                     
                     {/* Stats Header */}
                     <div className="flex justify-between items-end border-b-2 border-terminal pb-4 px-2">
-                        <div className="flex items-center gap-3">
-                             <img src={player1.user.avatar_url} className="w-12 h-12 border-2 border-terminal bg-terminal/20" alt="P1" />
+                        <div className="flex items-center gap-2 md:gap-3">
+                             <img src={player1.user.avatar_url} className="w-8 h-8 md:w-12 md:h-12 border-2 border-terminal bg-terminal/20" alt="P1" />
                              <div>
-                                <div className="font-bold text-lg leading-none">{player1.user.login.toUpperCase()}</div>
-                                <div className="text-sm opacity-70">CARDS: {player1.deck.length}</div>
+                                <div className="font-bold text-sm md:text-lg leading-none text-terminal">{player1.user.login.toUpperCase().slice(0, 8)}</div>
+                                <div className="text-xs text-terminal/70">CARDS: {player1.deck.length}</div>
                              </div>
                         </div>
-                        <div className="text-3xl font-bold opacity-50">VS</div>
-                        <div className="flex items-center gap-3 text-right">
+                        <div className="text-xl md:text-3xl font-bold text-terminal/50">VS</div>
+                        <div className="flex items-center gap-2 md:gap-3 text-right">
                              <div>
-                                <div className="font-bold text-lg leading-none">{player2.user.login.toUpperCase()}</div>
-                                <div className="text-sm opacity-70">CARDS: {player2.deck.length}</div>
+                                <div className="font-bold text-sm md:text-lg leading-none text-terminal">{player2.user.login.toUpperCase().slice(0, 8)}</div>
+                                <div className="text-xs text-terminal/70">CARDS: {player2.deck.length}</div>
                              </div>
-                             <img src={player2.user.avatar_url} className="w-12 h-12 border-2 border-terminal bg-terminal/20" alt="P2" />
+                             <img src={player2.user.avatar_url} className="w-8 h-8 md:w-12 md:h-12 border-2 border-terminal bg-terminal/20" alt="P2" />
                         </div>
                     </div>
 
                     {/* Cards Container */}
-                    <div className="flex justify-center items-start gap-8 py-2 relative min-h-[350px]">
+                    <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-8 py-2 relative min-h-[350px]">
                         {/* Player 1 Card (User) */}
-                        <div className="animate-enter relative z-10">
+                        <div className="animate-enter relative z-10 w-full md:w-auto flex justify-center">
                             <Card 
                                 repo={player1.deck[0]} 
                                 isInteractable={phase === GamePhase.TURN_PLAYER_SELECT}
@@ -352,14 +398,14 @@ const App: React.FC = () => {
                                 highlightedStat={selectedStat}
                             />
                             {phase === GamePhase.TURN_PLAYER_SELECT && (
-                                <div className="absolute -left-12 top-1/2 -translate-y-1/2 text-terminal animate-pulse text-2xl font-bold">
+                                <div className="absolute -left-4 md:-left-12 top-1/2 -translate-y-1/2 text-terminal animate-pulse text-2xl font-bold hidden md:block">
                                     ▶
                                 </div>
                             )}
                         </div>
 
                         {/* Player 2 Card (Opponent) */}
-                        <div className="animate-enter">
+                        <div className="animate-enter w-full md:w-auto flex justify-center">
                             <Card 
                                 repo={player2.deck[0]} 
                                 isHidden={!showResult}
